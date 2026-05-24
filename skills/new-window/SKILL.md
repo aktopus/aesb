@@ -21,7 +21,7 @@ Single-handoff case (N=1) is normal. If the user just wants a context reset on t
 
 ## Step 2 — Identify or create the originating worklog
 
-Scan `/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/` for in-flight candidates. Preference order:
+Scan `~/Documents/vault/worklog/YYYY/MM-month/` for in-flight candidates. Preference order:
 
 1. Worklogs created today.
 2. Worklogs with `status: In progress` or `status: Completed — awaiting ...` in frontmatter.
@@ -30,7 +30,7 @@ Scan `/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/` for in-flight candid
 
 If multiple are plausible, name them and ask which is the parent.
 
-If there is NO in-flight worklog (pure research / chat-only session): create an **umbrella parent worklog** at `/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<umbrella-slug>/overview.md`. The umbrella's job is to host the lineage. Body is 2–3 lines naming the originating context plus the `children:` frontmatter field. Propose the umbrella slug from the conversation's dominant theme and confirm with the user before writing.
+If there is NO in-flight worklog (pure research / chat-only session): create an **umbrella parent worklog** at `~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<umbrella-slug>/overview.md`. The umbrella's job is to host the lineage. Body is 2–3 lines naming the originating context plus the `children:` frontmatter field. Propose the umbrella slug from the conversation's dominant theme and confirm with the user before writing.
 
 ## Step 3 — Create each child worklog
 
@@ -38,7 +38,7 @@ For each confirmed slug, create `YYYY-MM-DD-<slug>/overview.md` with frontmatter
 
     ---
     status: In progress — fresh session pending pickup
-    parent_worklog: /Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/<parent-folder>/overview.md
+    parent_worklog: ~/Documents/vault/worklog/YYYY/MM-month/<parent-folder>/overview.md
     spawned_from_session: YYYY-MM-DD
     ---
 
@@ -46,7 +46,7 @@ The body must be self-contained — a fresh Claude won't see this session's mess
 
     # <Child topic — human readable>
 
-    **Parent:** [[work-logs/YYYY/MM-month/<parent-folder>/overview|<parent-folder>]]
+    **Parent:** [[worklog/YYYY/MM-month/<parent-folder>/overview|<parent-folder>]]
 
     ## What this worklog investigates
     <1–2 sentences: what's the concern, why look at it>
@@ -60,15 +60,15 @@ The body must be self-contained — a fresh Claude won't see this session's mess
     ## Suggested first action
     <one sentence — what should the fresh session do first>
 
-**No branch / worktree at spawn time.** Children start as investigation worklogs by default. If a child later decides it needs code changes, the fresh session creates a worktree+branch at that point per CLAUDE.md's existing merge-flow rule. Branch creation stays decoupled from worklog spawning.
+**No branch / worktree at spawn time.** Children start as investigation worklogs by default. If a child later decides it needs code changes, the fresh session creates a worktree+branch at that point as part of its own merge-flow. Branch creation stays decoupled from worklog spawning.
 
 ## Step 4 — Update the originating worklog's frontmatter
 
 Add (or extend) the `children:` field:
 
     children:
-      - /Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<child-1>/overview.md
-      - /Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<child-2>/overview.md
+      - ~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<child-1>/overview.md
+      - ~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<child-2>/overview.md
 
 Also apply today's existing /new-window updates to the parent: refresh `status`, fill `pr` / `final_commit_sha` if PRs landed in this session, flip `☐` operational items to `✅` with evidence. **`status` describes what *this* worklog did; `children:` describes the lineage. They're orthogonal — don't conflate.**
 
@@ -83,11 +83,11 @@ Also apply today's existing /new-window updates to the parent: refresh `status`,
     ## Children
 
     ### 1. <slug> — <one-line topic>
-    Worklog: `/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<slug>/overview.md`
+    Worklog: `~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<slug>/overview.md`
 
     Launch:
 
-        claude -n <slug> "@/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<slug>/overview.md — start fresh on this worklog" --dangerously-skip-permissions
+        claude -n <slug> "@~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<slug>/overview.md — start fresh on this worklog" --dangerously-skip-permissions
 
     ### 2. <slug> — <one-line topic>
     ...
@@ -151,25 +151,21 @@ If back-to-parent.md was also written this session (step 6), note that too: "Als
 ## Principles
 
 - **Self-contained handoffs.** Each child worklog's overview.md must let a fresh Claude start work without asking clarifying questions. Inline necessary context; don't make the new session walk back up to the parent for basics.
-- **Absolute paths everywhere.** `/Users/akpanoluo/code/...` form so they're clickable in the user's terminal.
+- **Absolute paths everywhere.** `~/Documents/vault/...` (or your equivalent) form so they're clickable in the user's terminal.
 - **Frontmatter is the lineage source of truth.** `parent_worklog:` on children, `children:` on parents — both on the worklog's existing overview.md. No separate `thread.md` file (would duplicate).
 - **One flow for all spawns.** Single-handoff (N=1) and fan-out (N>1) are the same skill — no mode switch, no second code path.
-- **Concerns are siblings, not nested children.** Each fan-out child is its own top-level worklog under `vault/work-logs/YYYY/MM-month/`, not a subdirectory of the parent. Lineage is in frontmatter; directory structure stays flat.
+- **Concerns are siblings, not nested children.** Each fan-out child is its own top-level worklog under `~/Documents/vault/worklog/YYYY/MM-month/`, not a subdirectory of the parent. Lineage is in frontmatter; directory structure stays flat.
 
 ## Red flags
 
 - **Never edit a child worklog to "fix" the parent's session record.** The parent's session record stays in the parent worklog.
 - **Never skip `parent_worklog:` frontmatter on a child.** It is the only thing connecting a child back upward — frontmatter is the lineage; without it the thread is broken.
 - **Never put time-decay phrases in next-window.md** ("earlier today", "just now"). Use absolute timestamps or the session date.
-- **Never spawn a code-change branch+worktree at fan-out time.** Children start as investigation worklogs; branches are a separate user action when code is actually needed (per CLAUDE.md merge-flow).
+- **Never spawn a code-change branch+worktree at fan-out time.** Children start as investigation worklogs; branches are a separate user action when code is actually needed.
 - **Never bundle multiple unrelated concerns into one child worklog.** Each distinct concern = its own child. That's the point of fan-out.
-- **Never re-introduce a `fanout/` subdirectory.** The earlier nested-subdir design was rejected in favor of flat siblings + frontmatter lineage.
+- **Never re-introduce a `fanout/` subdirectory.** Fan-out children are flat siblings + frontmatter lineage, not nested subdirectories.
 
 ## When to DECLINE the skill
 
 - User typed `/new-window` mid-task by mistake. Confirm first: "Want me to wrap up the session now? Current work: <1-line summary>."
 - Session truly produced nothing worth handing off (no work, no findings, no questions). Tell the user the handoff would be empty; offer to write minimal anyway if they insist.
-
-## Migration note (2026-05-19)
-
-This skill was upgraded to absorb the prior `/fanpoint` skill. The previous single-handoff-only /new-window contract is preserved as the N=1 case. The old `fanout/` subdirectory layout proposed in an interim draft was rejected in favor of flat sibling worklogs with frontmatter-based lineage so that fan-out children are first-class worklogs (full scaffold available: queries/, data/, branch/worktree on demand).
