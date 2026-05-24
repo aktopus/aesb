@@ -43,43 +43,51 @@ skills are the cadence that keeps the lift from going stale.
 
 ## Install
 
-Two paths. Most people will want both.
+The canonical install target is **Claude Code** via the symlink-based
+bootstrap below. If you're new to Claude Code or to coding more generally,
+the friendlier on-ramp is **Claude Code from Claude** — the Claude.ai app's
+in-browser code surface runs the same skills with a lower setup cost than
+the terminal CLI. Other code agents (Cursor, Aider, Codex CLI, GitHub
+Copilot, etc.) can adapt the skills with some agent-specific edits to
+frontmatter and conventions; the package is built around the Claude
+SKILL.md shape but the underlying prompts are portable.
 
-### Plugin install (loads in every Claude Cowork window)
+### Clone + install.sh (the canonical path)
 
-In a Claude Code or Cowork session:
-
-    /plugin marketplace add aktopus/aesb
-    /plugin install aesb
-
-From then on, the skills load at session start without anything mounted in
-the session. This is the only way to get always-on Cowork access; the laptop
-`~/.claude/skills/` path is not scanned by Cowork.
-
-### Clone + install.sh (lets you edit skills locally)
-
-If you want to edit the skills, refine them against your own taste, or hold
-the `personal` branch as a long-lived fork, clone the repo and run the
-bootstrap:
+Clone the repo and run the bootstrap:
 
     git clone https://github.com/aktopus/aesb ~/code/aesb
     cd ~/code/aesb
     ./install.sh
 
 The script creates `~/Documents/vault/{worklog,journal,deferred}`, symlinks
-each skill under `~/.claude/skills/` to its location in the repo, and
-optionally appends a small worklog standing instruction to
-`~/.claude/CLAUDE.md`. Re-running is safe. Any existing `~/.claude/skills/`
-entries that would collide get backed up rather than clobbered.
+each skill under `~/.claude/skills/` and each command under
+`~/.claude/commands/` to its location in the repo, and optionally appends
+a small worklog standing instruction to `~/.claude/CLAUDE.md`. Re-running
+is safe. Any existing entries that would collide get backed up rather than
+clobbered.
 
 Edits in the repo propagate to Claude Code on the laptop through the
-symlinks, and to Claude Cowork via `git push` plus a plugin reload.
+symlinks. To reverse the install at any time, run `./uninstall.sh` from
+the repo root. It removes only the symlinks that point into *this* repo,
+strips the marker-bracketed worklog block from `~/.claude/CLAUDE.md`, and
+leaves all your vault content (`~/Documents/vault/`) and any `install.sh`
+backup directories untouched. Pass `--yes` to skip the confirmation prompt.
 
-To reverse the install at any time, run `./uninstall.sh` from the repo
-root. It removes only the symlinks that point into *this* repo, strips
-the marker-bracketed worklog block from `~/.claude/CLAUDE.md`, and leaves
-all your vault content (`~/Documents/vault/`) and any `install.sh` backup
-directories untouched. Pass `--yes` to skip the confirmation prompt.
+### Other surfaces (best-effort)
+
+The repo ships `.claude-plugin/{plugin,marketplace}.json` as a Claude
+plugin manifest. In environments that support the marketplace mechanism,
+this should work:
+
+    /plugin marketplace add aktopus/aesb
+    /plugin install aesb
+
+Claude Cowork plugin loading is not currently a primary target; the
+canonical surface is laptop Claude Code via the symlink path above. If
+you're running another agent (Cursor, Aider, Codex, etc.), expect to
+adapt the SKILL.md frontmatter and slash-command conventions to whatever
+your agent expects.
 
 ## What to do in your first month
 
