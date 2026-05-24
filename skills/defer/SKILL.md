@@ -1,13 +1,13 @@
 ---
 name: defer
-description: Create, review, or manage deferral files in /code/vault/deferred/. Use when the user says "create a deferral", "defer this", "add this to deferrals", "this is follow-up work", "we'll come back to this", OR when the SessionStart hook surfaces due deferrals and the user picks an action (extend / graduate / close / drop / skip).
+description: Create, review, or manage deferral files in ~/Documents/vault/deferred/. Use when the user says "create a deferral", "defer this", "add this to deferrals", "this is follow-up work", "we'll come back to this", OR when the SessionStart hook surfaces due deferrals and the user picks an action (extend / graduate / close / drop / skip).
 ---
 
 # Defer skill
 
 Deferrals are deferred work: tasks surfaced during a larger investigation that aren't ready for a full work-log yet. This skill handles creating new deferrals and reviewing existing ones when they come up on their return date.
 
-**Location:** `/Users/akpanoluo/code/vault/deferred/` (flat, not nested in worklogs).
+**Location:** `~/Documents/vault/deferred/` (flat, not nested in worklogs).
 
 **Filename convention:** `YYYY-MM-DD-<topic>.md` using today's date.
 
@@ -40,7 +40,7 @@ Restate what's being deferred in 2-3 sentences. Confirm with the user before wri
 Apply these rules in priority order and state which rule triggered:
 
 1. User specified a date → use it.
-2. File content mentions a specific future dependency (e.g., "after the rollback window closes 2026-05-05", "after Balaji ships X") → that date + 1 day.
+2. File content mentions a specific future dependency (e.g., "after the rollback window closes 2026-05-05", "after the vendor ships X") → that date + 1 day.
 3. File content signals active waiting ("waiting on X", "urgent") → 5 business days from today.
 4. File content signals cleanup or low priority → 10 business days from today.
 5. Default → **3 business days from today**.
@@ -76,7 +76,7 @@ Always show the proposed priority to the user; they override freely.
 If the conversation has an active worklog, PR, or meeting note in context, reference it as an Obsidian wiki-link:
 
 ```yaml
-surfaced-by: "[[work-logs/2026/04-april/2026-04-21-sf-revert-wholesale/overview|2026-04-21-sf-revert-wholesale]]"
+surfaced-by: "[[worklog/YYYY/MM-month/YYYY-MM-DD-<topic>/overview|YYYY-MM-DD-<topic>]]"
 ```
 
 If there's no clear source, omit the field.
@@ -84,7 +84,7 @@ If there's no clear source, omit the field.
 ### Step 5: Write the file
 
 ```
-/Users/akpanoluo/code/vault/deferred/YYYY-MM-DD-<topic>.md
+~/Documents/vault/deferred/YYYY-MM-DD-<topic>.md
 ```
 
 Frontmatter at the top, then a blank line, then the body. Body structure (free-form, but these sections are useful):
@@ -110,36 +110,42 @@ Frontmatter at the top, then a blank line, then the body. Body structure (free-f
 
 "Created deferral at `<full path>`. Return date: `<weekday> <date>`. Priority: `<priority>`."
 
-## Variant: aggregated next-day-check deferral
+## Variant: aggregated post-deploy spot checks
 
-Some deferrals are deliberately short-lived: a deploy just happened, and we want a single SQL query (or equally cheap check) against `QUERY_HISTORY` / cost views / metrics tomorrow to confirm it landed as expected. Multiple such items piling up the same day belong in **one aggregated file**, not a separate file per topic. They're checked off together in tomorrow's review; anything that fails or needs deeper work gets graduated to a `/new-window` session per failure.
+Some deferrals are deliberately short-lived: you just shipped something, and you want a single cheap check tomorrow to confirm it landed as expected. Multiple such items piling up the same day belong in **one aggregated file**, not a separate file per topic. They're checked off together in tomorrow's review; anything that fails or needs deeper work gets graduated to a `/new-window` session per failure.
+
+A "cheap check" can be a SQL query, a log scan, a metric pull, an HTTP probe, a CLI invocation — anything with a binary pass/fail outcome you can read in a few seconds.
 
 ### When this variant applies
 
 Use the aggregate pattern when **any one** of these is true:
 
 - Return-date is today + 1 day (calendar or business day)
-- The proposed work is a single read-only SQL query (or shell one-liner) with a binary pass/fail
+- The proposed work is a single read-only check (SQL, shell one-liner, HTTP request, log grep) with a binary pass/fail
 - The user calls it a "verification", "spot-check", "post-deploy check", or "did it land?"
-- The trigger is a PR that just merged, a direct-to-prod deploy, or a Snowflake/EC2 mutation
+- The trigger is a PR that just merged, a direct-to-prod deploy, or any production-surface mutation
 
-If even one signal is missing, use the standard one-topic-per-file create flow instead — this variant is for the high-cadence "tag-deploy-and-verify-tomorrow" pattern, not for genuine multi-week investigations.
+If even one signal is missing, use the standard one-topic-per-file create flow instead — this variant is for the high-cadence "ship-and-verify-tomorrow" pattern, not for genuine multi-week investigations.
 
 ### File location and name
 
 There is **at most one aggregate file per surfaced date**. Use the name:
 
 ```
-/Users/akpanoluo/code/vault/deferred/YYYY-MM-DD-next-day-checks.md
+~/Documents/vault/deferred/YYYY-MM-DD-next-day-checks.md
 ```
 
 (YYYY-MM-DD = today's date.) Before creating, look for an existing file at that path. If it exists, **append** a new `### Check N — <topic>` subsection rather than creating a new file or replacing the existing one.
 
 Legacy single-topic deferrals from prior days don't get retroactively merged — only fold new items into today's file.
 
-### Time-window gotcha for QUERY_HISTORY checks
+### Time-window principle for any rolling check
 
-For Snowflake `QUERY_HISTORY` filters, **always use a rolling lookback** (`start_time >= DATEADD(hour, -24, CURRENT_TIMESTAMP())`), never `start_time >= CURRENT_DATE`. The MCP session timezone may differ from the timezone you assume (e.g., the US MCP evaluates `CURRENT_DATE` in PT, which is 08:00 UTC — so 03:00–08:00 UTC events from "this morning" fail the filter). A rolling window is timezone-agnostic. Originating burn: 2026-05-12 review of `2026-05-11-sizer-build-tag-propagation-check.md` Check 1 returned zero rows under `>= CURRENT_DATE` despite full coverage.
+For any check that filters by time (logs, query history, metrics, audit trails), **always use a rolling lookback** relative to the current moment (`now - 24h`, `now - 1h`, etc.) rather than a calendar-day boundary (`>= today`, `>= start of day`). The system you're querying may evaluate "today" in a session timezone that differs from yours, and events from the gap between those timezones will silently fall outside the filter.
+
+> Example — Snowflake `QUERY_HISTORY`: use `start_time >= DATEADD(hour, -24, CURRENT_TIMESTAMP())`, never `start_time >= CURRENT_DATE`. The MCP session timezone may differ from yours (e.g., US MCP evaluates `CURRENT_DATE` in PT = 08:00 UTC, so 03:00–08:00 UTC events from "this morning" fail the filter). A rolling window is timezone-agnostic.
+
+The principle generalizes: any time-windowed check against a system with mutable session timezones (databases, log stores, observability platforms) benefits from rolling lookbacks.
 
 ### Aggregate file structure
 
@@ -154,17 +160,17 @@ reviews: []
 ---
 
 ## TL;DR
-Aggregated verification of <N> deploys that landed today. Each check is a single read-only query with a binary outcome. Run all of them tomorrow morning; tick off the passes; spin a `/new-window` per failed check for deeper investigation.
+Aggregated verification of <N> things that shipped today. Each check is a single read-only probe with a binary outcome. Run all of them tomorrow morning; tick off the passes; spin a `/new-window` per failed check for deeper investigation.
 
 ## Checks
 
 ### Check 1 — <topic>
 - [ ] **Status:** pending
-- **Account / surface:** <which MCP / which DB>
+- **Account / surface:** <which system / environment>
 - **Why it matters:** <1-3 sentences linking back to today's deploy>
 
 ```sql
-<the single SQL>
+<the single SQL / shell / probe>
 ```
 
 | Outcome | Meaning | Action |
@@ -196,7 +202,7 @@ When this aggregate file surfaces on its return date:
 1. **Run each check's query** in order.
 2. For each **passing** check, flip the markdown checkbox `- [ ]` to `- [x]` and update **Status:** to `passed YYYY-MM-DD`. Don't delete the check — keep the history of what was verified.
 3. For each **failing** check, choose one:
-   - **Recoverable inline** (e.g., re-fetch a DDL, re-run a single ALTER) → fix it in the current session, then flip the checkbox. Note the recovery in **Status:** (`recovered + passed YYYY-MM-DD`).
+   - **Recoverable inline** (e.g., re-fetch a config, re-run a single command) → fix it in the current session, then flip the checkbox. Note the recovery in **Status:** (`recovered + passed YYYY-MM-DD`).
    - **Needs deeper investigation** → graduate **that specific check** to a `/new-window` worklog. Flip the checkbox to `- [-]` (in-progress) and update **Status:** to `graduated to [[<new worklog wikilink>]]`. The standard `graduate` action's worklog-creation and check-in-date logic applies per-check.
 4. **Roll up the file-level status:**
    - All checks `passed` or `recovered` → close the deferral (`status: done`, append a `reviews:` entry summarizing).
@@ -205,7 +211,7 @@ When this aggregate file surfaces on its return date:
 
 ### Multi-failure: prefer multiple narrow `/new-windows` over one wide one
 
-When two or more checks fail in unrelated ways (e.g., Check 1 fails on a US tagging propagation issue, Check 3 fails on a separate EU scheduling issue), spawn one `/new-window` per failure rather than bundling them. Each failure gets its own focused session and worklog. The aggregate deferral file remains the index — its References section accumulates wikilinks to the spawned worklogs.
+When two or more checks fail in unrelated ways, spawn one `/new-window` per failure rather than bundling them. Each failure gets its own focused session and worklog. The aggregate deferral file remains the index — its References section accumulates wikilinks to the spawned worklogs.
 
 ## Review operation
 
@@ -224,7 +230,7 @@ Update `return-date` to the new date. Keep `status: open`.
 ### graduate
 The deferred work is starting now. Actions:
 
-1. Create a work-log at `/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<topic>/overview.md` following the standard work-log template.
+1. Create a work-log at `~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<topic>/overview.md` following the standard work-log template.
 2. Cross-link: add a "References" line in the new worklog pointing to the deferral, and add a "Graduated to" line in the deferral body pointing to the new worklog.
 3. Propose a progress check-in date (default: today + 5 business days — one work-week cadence). Ask the user to confirm or override. Use the business-day snippet from the create operation's Step 2 to compute the date. This becomes the new `return-date` so the deferral surfaces for a progress check, not same-day.
 4. Update the deferral: `status: in-progress`, `return-date: <check-in-date>`, append to `reviews`:
@@ -234,7 +240,7 @@ reviews:
   - {date: <today>, action: graduate, worklog: "[[...]]", new-date: <check-in-date>, note: "starting now — progress check in N BD"}
 ```
 
-5. Ask the user if they want a paired branch/worktree (per `/code/vault/context/worklog-branch-workflow.md`).
+5. Ask the user if they want a paired branch/worktree for the new worklog.
 
 ### close
 The work got done (possibly inline in conversation). Update:
