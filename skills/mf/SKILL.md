@@ -1,5 +1,5 @@
 ---
-name: "Merge Flow"
+name: mf
 description: "Execute the full merge flow on the current set of implemented changes. Use when the user says /mf, 'merge flow', 'do the merge flow', or indicates they're done with changes and ready to merge."
 ---
 

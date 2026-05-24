@@ -43,18 +43,38 @@ skills are the cadence that keeps the lift from going stale.
 
 ## Install
 
-The canonical install target is **Claude Code** via the symlink-based
-bootstrap below. If you're new to Claude Code or to coding more generally,
-the friendlier on-ramp is **Claude Code from Claude** — the Claude.ai app's
-in-browser code surface runs the same skills with a lower setup cost than
-the terminal CLI. Other code agents (Cursor, Aider, Codex CLI, GitHub
-Copilot, etc.) can adapt the skills with some agent-specific edits to
-frontmatter and conventions; the package is built around the Claude
-SKILL.md shape but the underlying prompts are portable.
+The canonical install target is **Claude Code v2.1.150+ via its plugin
+marketplace**. If you're on an older Claude Code, on Cowork, or want a
+non-plugin install for any other reason, the `install.sh` bootstrap is the
+fallback. Other code agents (Cursor, Aider, Codex CLI, GitHub Copilot, etc.)
+can adapt the skills with some agent-specific edits to frontmatter and
+conventions; the package is built around the Claude SKILL.md shape but the
+underlying prompts are portable.
 
-### Clone + install.sh (the canonical path)
+### Plugin install (the canonical path)
 
-Clone the repo and run the bootstrap:
+In a Claude Code session:
+
+    /plugin marketplace add aktopus/aesb-marketplace
+    /plugin install aesb
+    /reload-plugins
+
+After install, skills and commands resolve under the `aesb:` namespace —
+`/aesb:worklog`, `/aesb:defer`, `/aesb:checkout`, etc. Updates land via
+`/plugin install aesb` once new versions are tagged in the marketplace stub.
+
+The marketplace metadata lives at https://github.com/aktopus/aesb-marketplace
+(a small repo that just points back at this one). The split exists because
+Claude Code's plugin install flow does two separate clones — one for the
+marketplace, one for the plugin — and a self-pointing config fails its
+schema validator.
+
+### Bootstrap script (fallback for older Claude Code, Cowork, or non-plugin contexts)
+
+If you're on Claude Code older than v2.1.150, running aesb under a
+non-plugin surface (Cowork, plain Claude.ai), or you'd rather wire skills
+in via symlink than via the plugin manager, clone the repo and run the
+bootstrap:
 
     git clone https://github.com/aktopus/aesb ~/code/aesb
     cd ~/code/aesb
@@ -68,7 +88,7 @@ is safe. Any existing entries that would collide get backed up rather than
 clobbered.
 
 Edits in the repo propagate to Claude Code on the laptop through the
-symlinks. To reverse the install at any time, run `./uninstall.sh` from
+symlinks. To reverse the bootstrap at any time, run `./uninstall.sh` from
 the repo root. It removes only the symlinks that point into *this* repo,
 strips the marker-bracketed worklog block from `~/.claude/CLAUDE.md`, and
 leaves all your vault content (`~/Documents/vault/`) and any `install.sh`
@@ -79,10 +99,7 @@ backup directories untouched. Pass `--yes` to skip the confirmation prompt.
 If you're running another agent (Cursor, Aider, Codex CLI, GitHub Copilot,
 etc.), expect to adapt the SKILL.md frontmatter and slash-command
 conventions to whatever your agent expects. The underlying prompts are
-portable; the wrappers are not. The Claude plugin marketplace path
-(`/plugin marketplace add`) is not currently supported by this repo's
-geometry — see the `personal` branch's commit history for the bounded
-investigation if you want the details.
+portable; the wrappers are not.
 
 ## What to do in your first month
 

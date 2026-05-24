@@ -1,10 +1,11 @@
 ---
 name: new-window
 description: "Use when the user says /new-window, types 'new window', 'hand off', 'context handoff', or wants to spin off one or more fresh Claude sessions from the current work. Always creates new worklog(s) for the spawned session(s) and writes self-contained handoff materials. Supports single-handoff (one fresh session continues this work) and fan-out (N fresh sessions investigate parallel concerns) from one entry point — same flow, N=1 vs N>1."
-argument-hint: [child-topic-slug ...]   # optional — otherwise interactive
 ---
 
 # /new-window — Spawn fresh sessions from current work
+
+Optional arguments: one or more child topic slugs (`/aesb:new-window slug1 slug2`); otherwise interactive.
 
 Every fresh session = its own new worklog. Lineage lives in worklog frontmatter (`parent_worklog:` on children, `children:` on parents). Single-handoff is just N=1 of fan-out — the skill flow below is identical for both.
 
