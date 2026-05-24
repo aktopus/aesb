@@ -2,10 +2,9 @@
 
 A working set of Claude skills, prompts, and standing instructions for running
 a strategy-to-execution operating system on top of Claude Code and Claude
-Cowork. The system bridges a multi-month charter, monthly bets, a Sunday
+Cowork. The system bridges a multi-month charter, monthly bets, a weekly
 ritual that time-blocks the week, and a daily checkout that captures what
-actually happened. It is the artifact behind the May 2026 Newtown Analytics
-Data Salon talk "AI and the Second Brain."
+actually happened.
 
 The inciting idea came from Dini Gurunandini's post "I let Claude plan my
 entire week." The shape here is calibrated for knowledge workers navigating a
@@ -16,12 +15,17 @@ retiring Claude.
 
 ## What's in the box
 
-The repo ships seven skills, one cowork-project briefing, and a builder
-prompt. Each is documented in its own SKILL.md or markdown header. Briefly:
+Five skills, two slash commands, one cowork-project briefing, and two vision
+artifacts. Each is documented in its own SKILL.md or markdown header. Briefly:
+
+Slash commands (in `commands/`):
 
 - `checkout` runs the end-of-work-day ritual that produces a journal entry,
-- `weekly-ritual` runs the Sunday-or-whatever-day-you-pick session that reads
-  last week's journal entries and time-blocks the new week,
+- `weekly-ritual` runs the day-of-your-choosing session that reads last week's
+  journal entries and time-blocks the new week.
+
+Skills (in `skills/`):
+
 - `worklog` writes per-chat worklog entries when a task wraps,
 - `defer` parks follow-up work in `~/Documents/vault/deferred/` with a
   return date the SessionStart hook surfaces later,
@@ -29,17 +33,21 @@ prompt. Each is documented in its own SKILL.md or markdown header. Briefly:
   self-contained handoff materials,
 - `ss` pulls the N most recent macOS screenshots into context as inline
   images,
-- and `mf` (merge-flow) runs the full ship sequence on a feature branch,
-  customizable per platform via its setup conversation.
+- `mf` (merge-flow) runs the full ship sequence on a feature branch,
+  with platform multi-select for GitHub, GitLab, Bitbucket, and CodeCommit.
 
-The cowork-projects directory holds `thought-partner.md`, a briefing for
-Claude as an ongoing thought-partner relationship calibrated to push you
-toward leader-altitude writing and structural argument.
+The `cowork-projects/` directory holds `thought-partner.md`, a templated
+briefing for Claude as an ongoing thought-partner relationship calibrated to
+push you toward leader-altitude writing and structural argument. Fill in the
+`{{placeholder}}` markers with your own benchmark, voice document path, and
+vault paths.
 
-The vision directory holds `system-builder-prompt.md`, the two-to-four-hour
+The `vision/` directory holds `system-builder-prompt.md` (the two-to-four-hour
 bootstrap conversation that produces a charter, a monthly template, the
-Sunday and checkout prompts, and a patterns document. This is the lift; the
-skills are the cadence that keeps the lift from going stale.
+weekly and checkout prompts, and a patterns document) and `system-summary.md`
+(a narrative explainer of how the system works once it's running). The
+builder prompt is the lift; the skills are the cadence that keeps the lift
+from going stale.
 
 ## Install
 
@@ -113,22 +121,23 @@ and they prove your install is wired correctly. Don't touch the rest yet.
 
 **Week 1.** Run `/checkout` every workday. Let your `~/Documents/vault/journal/`
 fill up. Use the `worklog` standing instruction to drop chat-session worklogs
-in `~/Documents/vault/worklog/`. The Sunday ritual has nothing to reflect on
+in `~/Documents/vault/worklog/`. The weekly ritual has nothing to reflect on
 without a populated journal and worklog directory, so build that first.
 
 **The weekend after Week 1.** Block two to four hours, open a fresh Claude
 session, and paste `vision/system-builder-prompt.md`. The conversation
-produces your charter, the monthly template, the customized Sunday ritual,
+produces your charter, the monthly template, the customized weekly ritual,
 and the patterns document. Don't try to compress this. The cognitive lift is
 the point.
 
-**Week 2 onward.** Run `/weekly-ritual` Sunday, `/checkout` daily, monthly
-review on the first weekend of the month. When something doesn't fit the
-cadence, drop it in `/defer` and let the SessionStart hook surface it later.
+**Week 2 onward.** Run `/weekly-ritual` on your chosen day, `/checkout` daily,
+monthly review on the first weekend of the month. When something doesn't fit
+the cadence, drop it in `/defer` and let the SessionStart hook surface it
+later.
 
-**When you start writing code with Claude.** Run the `mf` skill's setup
-conversation to configure merge-flow for your platform (GitHub, GitLab,
-CodeCommit, etc.).
+**When you start writing code with Claude.** Run `/mf` for the first time;
+it'll ask which platform hosts the repo (GitHub, GitLab, Bitbucket, AWS
+CodeCommit, or "tell me") and proceed with that platform's CLI commands.
 
 ## Voice extraction
 
@@ -142,20 +151,22 @@ is that the conversation surfaces higher-level thinking you didn't know
 you'd articulated. For me it produced the voice document and a four-month
 vision draft in the same sitting. Worth the two hours.
 
-## Personal vs main branch (for contributors and forkers)
+## You're on the templated build (`main`)
 
-The repo runs two long-lived branches. `main` is the public, templated
-build: no Galloway-as-benchmark line, no ArcSpan paths, no specific charter.
-`personal` is my lived-in fork with the personalizations intact. The
-templated build is what `git clone` lands you in by default; the personal
-branch exists so I can use the same repo as my daily driver.
+This branch is the public, templated build: generic vault paths, no specific
+benchmark, no specific charter, multi-platform merge-flow. `git clone` lands
+you here by default; `/plugin install aesb` resolves here too.
 
-Contributions go to `main` via PR. Refinements I want to publish from my
-own use travel `personal -> main` through a per-skill de-personalization
-pass, which is a Claude conversation per skill rather than a regex pass.
-Most personalizations carry information, so the pass is where the
-generalizable shape gets articulated. That conversation is where the actual
-value of the templated version lives.
+The repo also has a `personal` branch — the author's lived-in fork with
+personalizations intact (specific benchmark, real vault paths, a single
+chosen platform for the merge-flow). If you've landed on that branch by
+accident, the personal-branch README links back here.
+
+Contributions go to `main` via PR. Refinements that travel `personal -> main`
+go through a per-skill de-personalization pass, which is a Claude
+conversation per skill rather than a regex pass. Most personalizations
+carry information about the generalizable shape, so the pass is where the
+templated version actually earns its keep.
 
 ## Where things go
 
@@ -172,10 +183,8 @@ value of the templated version lives.
 ## Credits
 
 The strategic-OS shape descends from Dini Gurunandini's "I let Claude plan
-my entire week." The Sunday-ritual and daily-checkout patterns are a direct
+my entire week." The weekly-ritual and daily-checkout patterns are a direct
 lift from her conversation, generalized. The voice-extraction step descends
 from Ruben Hassid's "You're Just a Text File." The `ss` screenshot-pull
 skill descends from Allie K. Miller's one-minute Claude tip post on
 LinkedIn (https://www.linkedin.com/posts/alliekmiller_give-me-one-minute-and-ill-improve-your-activity-7457149184710758400-EYs1).
-The salon framing is Soundshop, with the Data Salon being a 2026
-collaboration with Michael Bartoli of Newtown Analytics.
