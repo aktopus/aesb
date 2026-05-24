@@ -16,6 +16,6 @@ Sections (use these defaults; trim or extend as the session warrants):
 - **TL;DR** — one to three sentences naming the punchline of the session,
 - **What I did** — a bulleted summary of the actions taken, files touched, decisions made,
 - **What I'm leaving for next time** — open questions, unfinished work, anything that should be picked up later or deferred,
-- and **Verification / spot-checks** — the actual SQL, commands, or test runs that confirmed the work, in code blocks so they're rerunnable.
+- and **Verification / spot-checks** — the actual commands or test runs that confirmed the work, in code blocks so they're rerunnable.
 
 Skip silently if the session produced nothing worth a worklog (chat-only, no findings, no decisions). Don't write speculative worklogs.
