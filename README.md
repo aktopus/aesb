@@ -1,4 +1,4 @@
-# aesb — Akpanoluo Etteh's Second Brain
+# aesb — Akpanoluo Etteh's AI-Enabled Second Brain
 
 A working set of Claude skills, prompts, and standing instructions for running
 a strategy-to-execution operating system on top of Claude Code and Claude
