@@ -144,7 +144,7 @@ value of the templated version lives.
 
 | What                | Where                                        |
 |---------------------|----------------------------------------------|
-| Skills (source)     | `<repo>/.claude/skills/<name>/SKILL.md`       |
+| Skills (source)     | `<repo>/skills/<name>/SKILL.md`               |
 | Skills (laptop)     | `~/.claude/skills/<name>` (symlink)           |
 | Journal entries     | `~/Documents/vault/journal/YYYY-MM-DD.md`     |
 | Worklogs            | `~/Documents/vault/worklog/YYYY/MM-month/...` |

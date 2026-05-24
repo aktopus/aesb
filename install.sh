@@ -16,9 +16,9 @@
 set -euo pipefail
 
 REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SKILLS_SRC="$REPO_ROOT/.claude/skills"
+SKILLS_SRC="$REPO_ROOT/skills"
 SKILLS_DST="$HOME/.claude/skills"
-COMMANDS_SRC="$REPO_ROOT/.claude/commands"
+COMMANDS_SRC="$REPO_ROOT/commands"
 COMMANDS_DST="$HOME/.claude/commands"
 VAULT_ROOT="$HOME/Documents/vault"
 CLAUDE_MD="$HOME/.claude/CLAUDE.md"
