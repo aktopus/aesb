@@ -4,12 +4,16 @@
     "name": "Akpanoluo Etteh",
     "url": "https://github.com/aktopus"
   },
-  "description": "Akpanoluo Etteh's Second Brain — packaged skills, prompts, and standing instructions for running a strategy-to-execution operating system on top of Claude Code and Cowork.",
+  "description": "Akpanoluo Etteh's Second Brain — packaged skills and commands for running a strategy-to-execution operating system on top of Claude Code.",
   "plugins": [
     {
       "name": "aesb",
-      "source": ".",
-      "description": "Strategy-to-execution OS skills: checkout, weekly-ritual, worklog, defer, new-window, ss, mf."
+      "source": {
+        "source": "url",
+        "url": "https://github.com/aktopus/aesb.git"
+      },
+      "description": "Strategy-to-execution OS skills (checkout, sunday, worklog, defer, new-window, ss, mf) for Claude Code.",
+      "version": "0.1.0"
     }
   ]
 }
