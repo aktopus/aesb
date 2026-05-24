@@ -75,6 +75,12 @@ entries that would collide get backed up rather than clobbered.
 Edits in the repo propagate to Claude Code on the laptop through the
 symlinks, and to Claude Cowork via `git push` plus a plugin reload.
 
+To reverse the install at any time, run `./uninstall.sh` from the repo
+root. It removes only the symlinks that point into *this* repo, strips
+the marker-bracketed worklog block from `~/.claude/CLAUDE.md`, and leaves
+all your vault content (`~/Documents/vault/`) and any `install.sh` backup
+directories untouched. Pass `--yes` to skip the confirmation prompt.
+
 ## What to do in your first month
 
 The full system is a habit, not a tool, and people who try to adopt all of
