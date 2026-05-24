@@ -1,5 +1,9 @@
 # aesb — Akpanoluo Etteh's Second Brain
 
+> **You're looking at the lived-in `personal` fork.** For the templated public
+> version (generic vault paths, no specific benchmark, multi-platform
+> merge-flow), see [`main`](https://github.com/aktopus/aesb/tree/main).
+
 A working set of Claude skills, prompts, and standing instructions for running
 a strategy-to-execution operating system on top of Claude Code and Claude
 Cowork. The system bridges a multi-month charter, monthly bets, a Sunday
