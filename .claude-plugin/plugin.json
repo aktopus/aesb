@@ -1,6 +1,6 @@
 {
   "name": "aesb",
-  "description": "Strategy-to-execution OS skills (checkout, sunday, worklog, defer, new-window, ss, mf) for Claude Code",
+  "description": "Templated strategy-to-execution OS for Claude Code: weekly-ritual, checkout, worklog, defer, new-window, ss, mf",
   "version": "0.1.0",
   "author": {
     "name": "Akpanoluo Etteh",
