@@ -1,0 +1,8 @@
+diff --git a/airflow-dags/utils.py b/airflow-dags/utils.py
+index 1234567..abcdef0 100644
+--- a/airflow-dags/utils.py
++++ b/airflow-dags/utils.py
+@@ -10,7 +10,7 @@ def helper(silo):
+-    db_name = silo.upper()
++    database_name = silo.upper()
+     return database_name

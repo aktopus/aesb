@@ -1,0 +1,15 @@
+{
+  "name": "aesb",
+  "owner": {
+    "name": "Akpanoluo Etteh",
+    "url": "https://github.com/aktopus"
+  },
+  "description": "Akpanoluo Etteh's Second Brain — packaged skills, prompts, and standing instructions for running a strategy-to-execution operating system on top of Claude Code and Cowork.",
+  "plugins": [
+    {
+      "name": "aesb",
+      "source": ".",
+      "description": "Strategy-to-execution OS skills: checkout, weekly-ritual, worklog, defer, new-window, ss, mf."
+    }
+  ]
+}

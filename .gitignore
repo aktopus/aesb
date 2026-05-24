@@ -1,0 +1,10 @@
+# editor swap files
+.*.swp
+.*.swo
+*~
+
+# macOS
+.DS_Store
+
+# install.sh backup directories (created at runtime on user machines)
+.aesb-backup-*

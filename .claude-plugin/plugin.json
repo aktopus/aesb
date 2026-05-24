@@ -1,0 +1,25 @@
+{
+  "name": "aesb",
+  "version": "0.1.0",
+  "description": "Akpanoluo Etteh's Second Brain — a strategy-to-execution operating system on top of Claude Code and Cowork. Skills: checkout, weekly-ritual, worklog, defer, new-window, ss, mf.",
+  "author": {
+    "name": "Akpanoluo Etteh",
+    "url": "https://akpanoluo.substack.com"
+  },
+  "homepage": "https://github.com/aktopus/aesb",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aktopus/aesb.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "second-brain",
+    "strategy-to-execution",
+    "charter",
+    "sunday-ritual",
+    "checkout",
+    "worklog",
+    "claude-code",
+    "cowork"
+  ]
+}
