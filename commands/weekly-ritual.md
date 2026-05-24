@@ -4,7 +4,7 @@ description: Run the weekly ritual against the active charter
 
 # Weekly ritual
 
-You are running the user's weekly operating system. Today is the start of a new work week. Run the four-block flow below in order. Don't move to the next block until the current one is complete. If the user tries to skip, push back: skipping breaks the feedback loop.
+You are running the user's weekly operating system. Today is the start of a new work week. Run the six-block flow below in order. Don't move to the next block until the current one is complete. If the user tries to skip, push back: skipping breaks the feedback loop.
 
 ## Inputs to pull first
 
@@ -133,13 +133,36 @@ If no for both, state "no monthly or charter changes this week" and move on.
 
 Discipline: don't be eager to update. Most weeks won't require edits. The check keeps the docs accurate without manufacturing work.
 
+## Block 6: Log the ritual session itself
+
+After the weekly doc is written and any monthly/charter edits applied, spawn a companion ritual-session worklog at `work-logs/YYYY/MM-month/YYYY-MM-DD-weekly-ritual/overview.md` (or whatever cadence + naming convention the user prefers). This captures the PROCESS that the weekly doc compresses out: strategic decisions made, coaching moments, reasoning trails for "why we picked X over Y."
+
+The weekly doc captures the OUTPUTS — synthesis, win conditions, calendar, daily lists, charter/monthly edits applied. It does NOT capture:
+
+- The reasoning trail behind each strategic decision (why this intention over alternatives, why this win-condition shape, why this triage rule).
+- Coaching moments worth banking (mid-session corrections, framings that emerged, patterns the user named in their own words).
+- The lineage of charter/monthly edits applied this session (which trigger condition fired, what the alternative would have looked like).
+
+Structure the ritual-session worklog like this:
+
+1. **Strategic decisions made** — each decision as a sub-section with "the call" (one sentence), "reasoning" (the user's own words wherever they spoke them), and "consequences" (artifacts produced, charter/monthly edits triggered).
+2. **Coaching moments worth banking** — mid-session corrections, named patterns, framings the user surfaced that should outlast this session.
+3. **Artifacts produced** — pointers to every file written, calendar event created, ticket comment posted, memory updated. Index for traceability with file paths and IDs.
+4. **Open follow-ups** — items deferred to next ritual or to specific dates.
+
+Reference the worklog path from the weekly doc body (e.g. "Companion ritual-session worklog: `/path/to/...overview.md`") so the link goes both ways.
+
+Default: always spawn. Quiet weeks may produce thin worklogs and that's fine — the cost of writing a short worklog is low; the cost of losing the reasoning trail behind a strategic decision is high. The worklog is companion to the weekly doc, not a duplicate.
+
 ## The loop
 
-Reflection produces wins, misses, patterns. Those feed win conditions. Those feed the calendar. Those feed daily lists. Daily check-outs feed back into next week's reflection. Once the weekly is built, the feedback step closes the loop back to monthly and charter when reality diverges. Skip a block, the next one runs on guesswork. Don't skip.
+Reflection produces wins, misses, patterns. Those feed win conditions. Those feed the calendar. Those feed daily lists. Daily check-outs feed back into next week's reflection. Once the weekly is built, the feedback step closes the loop back to monthly and charter when reality diverges, and the ritual-session worklog preserves the reasoning trail so future-self can re-read why this week's decisions landed the way they did. Skip a block, the next one runs on guesswork. Don't skip.
 
 ## Output
 
 Save the resulting weekly doc at `vision/<charter-name>/weekly/YYYY-MM-DD-week.md` where the date is the week's start (typically Sunday or Monday — pick a convention and stick with it). Use frontmatter with title, week_start, last_updated, and tags. Include intention, win conditions, theme map, calendar, daily lists, and a daily-check-outs section to fill in through the week.
+
+Save the companion ritual-session worklog at `work-logs/YYYY/MM-month/YYYY-MM-DD-weekly-ritual/overview.md` per Block 6.
 
 ## A note on the day of the week
 
