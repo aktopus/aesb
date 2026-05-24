@@ -5,111 +5,99 @@ description: "Execute the full merge flow on the current set of implemented chan
 
 # Merge Flow
 
-Execute the **Merge Flow** as defined in the project's CLAUDE.md. This is the complete sequence: work-log, worktree, commit, push, PR, squash-merge, cleanup, and work-log update.
+A self-contained pipeline for getting a set of local changes from your working tree to your project's default branch: worklog, worktree, commit, push, PR, code review, squash-merge, cleanup, worklog update.
 
-## Instructions
+Most steps are platform-agnostic. **The PR-creation, code-review-comment, and squash-merge steps depend on which forge hosts the repo** — GitHub, GitLab, Bitbucket, AWS CodeCommit. The first time `/mf` runs against an unfamiliar repo, ask the user which platform they're on and proceed with that platform's CLI commands. After that, just keep using it.
 
-When invoked, execute ALL steps of the Merge Flow from CLAUDE.md in sequence **without pausing for confirmation**:
+## Sequence
 
-1. Create work-log
-2. Create worktree
-3. Copy modified files from main to worktree, then commit in the worktree
-4. Push branch (from the worktree)
-5. Create PR via `awscc create-pull-request`
-6. **Run `/code-review:code-review` on the PR** — see Code Review section below
-7. Squash-merge with a meaningful commit message (auto-generate, do NOT ask to confirm)
-8. Cleanup — see critical rules below
-9. Update work-log with PR ID, final commit SHA, set status to Completed
+Execute these in order, **without pausing for confirmation between steps** unless a step explicitly says to stop:
 
-Refer to the **Merge Flow** section in the project CLAUDE.md (`/Users/akpanoluo/code/CLAUDE.md`) for exact commands and formatting rules.
-
-## Key Rules
-
-- **Never** leave the default "Squashed commit of the following:" merge message
-- Commit message title: concise summary of what changed
-- Commit message body: 1-3 sentences explaining why and what it affects
-- Do not pause between steps to ask for confirmation
-- If there's an existing worktree with uncommitted changes, use it rather than creating a new one
-- Ask if the user wants a paired work-log only if one doesn't already exist for this work
-
-## Step 5.5: Gotcha Checker — Run Between PR Creation and Code Review
-
-After the PR is created (step 5) and **before** invoking `/code-review:code-review` (step 6), run the gotcha checker against the PR's diff. Findings are surfaced to the user AND injected into the step-6 reviewer prompt under a `## Pre-merge gotcha findings` section. The checker never blocks the merge — its purpose is to feed signal into the review, which has its own gating logic.
-
-### Procedure
-
-1. **Read the gotcha library** at `/Users/akpanoluo/code/vault/context/airflow-dag-gotchas.md`.
-
-2. **Parse `gotcha-trigger:` YAML blocks.** Each block has fields `id`, `diff_pattern`, and `check`. Gotchas without a trigger block are reference-only — skip them silently.
-
-3. **Compute the diff** from the worktree:
+1. **Create or update a worklog** at `~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<topic>/overview.md`. The worklog header should include the branch name and worktree path. If a worklog already exists for this work, update it rather than creating a new one.
+2. **Create a worktree** if you aren't already in one: `git worktree add ../<repo>-<branch> -b <branch>`. After creation, surface to the user on its own line: `Run \`/rename <branch>\` to align the session chip with the new worktree.` (Substitute the actual branch name. `/rename` is a Claude Code slash command the user must type — the model cannot rename the live session itself.)
+3. **Make changes and commit** in the worktree. Skip this step if changes are already committed.
+4. **Push the branch**: `git push -u origin <branch>`.
+4.5. **Pre-flight rebase onto latest default branch.** Catches conflicts at the cheap resolution venue (your branch) rather than at squash-merge time on the platform.
    ```bash
-   cd <worktree-path>
-   git fetch origin main --quiet
-   git diff origin/main..HEAD
+   git fetch origin <default-branch>
+   git merge-base --is-ancestor origin/<default-branch> HEAD || \
+     (git rebase origin/<default-branch> && git push --force-with-lease)
    ```
+   When the branch is already up to date this is a ~1s no-op. When it isn't, the rebase plus `--force-with-lease` resolves at branch level. Some platforms' squash-merge refuses merge commits on the source branch, so a reactive `git merge origin/<default-branch>` doesn't always rescue you later — rebase is the more general fix.
+5. **Create the PR.** Platform-dependent:
+   - **GitHub** (`gh`):
+     ```bash
+     gh pr create --title "<concise title>" --body "$(cat <<'EOF'
+     ## Summary
+     <description>
 
-4. **For each gotcha trigger:** test the diff against `diff_pattern` (extended regex, line-oriented). If any line matches, execute `check` from the worktree root, piping the full diff on stdin. Capture stdout (findings) and stderr (errors).
+     ## Work Log
+     ~/Documents/vault/worklog/YYYY/MM-month/YYYY-MM-DD-<topic>/overview.md
+     EOF
+     )"
+     ```
+   - **GitLab** (`glab`): `glab mr create --title "<title>" --description "<body>"`
+   - **Bitbucket Cloud** (`bb` or `bb-cli`): `bb pr create --title "<title>" --body "<body>"` (verify against your installed CLI)
+   - **AWS CodeCommit**: `aws codecommit create-pull-request --title "..." --description "..." --targets repositoryName=<repo>,sourceReference=<branch>,destinationReference=<default-branch>`
+   - **Unrecognized platform**: ask the user for the exact command.
 
-5. **Aggregate findings.** If at least one finding was emitted, print to terminal:
+   Keep the PR title concise (under ~70 chars). The body should explain *why* this change is being made; the diff explains *what*.
+5.5. **Optional: run a project-specific gotcha checker.** See the *Gotcha-checker pattern* section below. The kit ships no implementation — adopters wire this up if and when they have a gotcha library worth automating against.
+6. **Code-review the PR** via `/code-review:code-review` (or your project's review skill). **Findings policy:**
+   - **No high-confidence issues** → proceed straight to squash-merge.
+   - **Minor issues** (style, nit, small bug, missing edge case) → fix in the worktree, commit + push (PR auto-updates), then proceed to squash-merge. Do **not** re-run the review (avoids infinite loops). Do **not** alert the user.
+   - **Significant issues** → STOP and surface to the user before any further action. "Significant" = invalidates the PR's purpose (the change doesn't actually do what the PR claims), introduces a new bug worse than the one being fixed, or breaks a contract (API, data shape, downstream consumer).
+7. **Squash-merge** with a meaningful commit message. Auto-generate; do NOT ask to confirm. Platform-dependent:
+   - **GitHub**: `gh pr merge <PR_NUMBER> --squash --subject "<title>" --body "<body>"`
+   - **GitLab**: `glab mr merge <MR_IID> --squash --message "<commit message>"`
+   - **AWS CodeCommit**: `aws codecommit merge-pull-request-by-squash --pull-request-id <PR_ID> --repository-name <repo> --source-commit-id <SHA> --commit-message "<message>"`
+
+   Commit message shape:
+   - Title line: concise summary of what changed.
+   - Blank line, then 1-3 sentences explaining *why* and *what it affects*.
+8. **Cleanup.** Always `cd` to the main repo before cleanup — if the shell's cwd is inside the worktree when `git worktree remove` runs, the directory is deleted under it and all subsequent commands fail with "No such file or directory". Run as **separate commands**, not a single chained `&&` line:
+   ```bash
+   cd <main-repo-path>
+   git push origin --delete <branch>
+   git worktree remove ../<repo>-<branch>
+   git branch -D <branch>
+   git checkout -- .          # discard any edits that leaked into the main tree
+   git pull
    ```
-   Gotcha checker: 1 of N rules triggered
-   <finding lines>
+   The `git checkout -- .` is necessary because files edited interactively in the main tree before the worktree was created will block `git pull` with "local changes would be overwritten". Discarding them is safe — the squash merge already contains those changes.
+9. **Update the worklog** with the PR ID, the final squash-commit SHA, and `status: Completed`.
+
+## Key rules
+
+- **Never** leave the default "Squashed commit of the following:" merge message — auto-generate a meaningful one.
+- Commit message: concise title; 1-3 sentence body explaining why and what's affected.
+- Do not pause between steps to ask for confirmation unless step 6 surfaces a significant finding.
+- If there's an existing worktree with uncommitted changes, use it rather than creating a new one.
+- Ask if the user wants a paired work-log only if one doesn't already exist for this work.
+
+## Gotcha-checker pattern (concept-spec only)
+
+Some projects accumulate a library of *gotchas* — known patterns in diffs that often correlate with bugs (e.g., "splitting SQL on `;` ignores semicolons in comments", "adding a column to a schema dict but not running ALTER", "removing a CSV row that some downstream system still keys on"). When that library exists, it's useful to scan each PR's diff against it as a pre-review signal.
+
+This skill **does not ship a gotcha-checker implementation** — the pattern is project-specific and the maintenance surface isn't worth shipping a generic stub for. Here's the shape if you want to build one:
+
+1. Maintain a library file (e.g., `~/Documents/vault/context/<project>-gotchas.md`) that documents each gotcha. Embed a structured trigger block in each entry:
+   ```yaml
+   gotcha-trigger:
+     id: split-sql-comment-semicolon
+     diff_pattern: '\.split\(["\x27];["\x27]\)'        # extended regex, line-oriented
+     check: scripts/check-split-sql.sh                  # script that reads diff on stdin, emits findings to stdout
    ```
-   If none, print:
-   ```
-   Gotcha checker: 0 of N rules triggered
-   ```
+2. At step 5.5 of the merge-flow, parse all `gotcha-trigger:` blocks from the library file. Skip entries without a trigger block — those are reference-only.
+3. Compute the PR diff: `git fetch origin <default-branch> --quiet && git diff origin/<default-branch>..HEAD`.
+4. For each trigger, test the diff against its `diff_pattern`. If any line matches, run `check` from the worktree root with the full diff on stdin. Capture stdout as findings.
+5. Surface findings to the user and inject them into the step-6 review prompt under `## Pre-merge gotcha findings`. The checker is purely advisory — only step 6 gates the merge.
 
-6. **Inject into step 6.** When invoking the code-review reviewer agents, prepend the findings to their prompt under a section header `## Pre-merge gotcha findings (from merge-flow step 5.5)`. The reviewers treat findings as concerns to evaluate during review.
+Failure handling: malformed YAML in a trigger block → log the parse error and skip that gotcha. Check script exits non-zero → treat its stderr as a finding. Zero triggers match → no-op message and proceed. User says "skip the checker" → skip and proceed.
 
-### Failure handling
+## When to STOP
 
-- **Malformed YAML in a gotcha-trigger block:** print the parse error, skip that gotcha, continue. Don't block the merge for a documentation bug.
-- **Check script exits non-zero:** treat as a finding; surface its stderr in the output. Don't block.
-- **No triggers match:** print the "0 of N rules triggered" line and proceed.
-- **User wants to skip the checker:** if the user explicitly says to skip step 5.5, do so and proceed to step 6. No flag needed.
-
-### Reference
-
-- Spec and design: `/Users/akpanoluo/code/vault/work-logs/2026/04-april/2026-04-28-merge-flow-gotcha-checker/overview.md`
-- Check scripts: `/Users/akpanoluo/.claude/skills/mf/gotcha-checks/`
-- Gotcha library: `/Users/akpanoluo/code/vault/context/airflow-dag-gotchas.md`
-
-## Code Review — Run Before Merge (CodeCommit-Adapted)
-
-After the PR is created and **before** squash-merge, invoke `/code-review:code-review` against the PR. The shipped skill is GitHub-only (`gh` CLI + github.com permalink format). For abuilder (CodeCommit) it works with these adaptations baked in — apply them automatically without asking:
-
-**Skip these steps from the shipped skill:**
-- Step 1 (eligibility check via `gh pr view`) — you just opened the PR; it's open, not draft, no prior review
-- Step 3 (Haiku PR-summary agent) — you authored the PR and have the diff in context
-
-**Adapt these steps:**
-- Step 4 reviewers: feed them `cd <worktree> && git diff <merge-base-sha>..<head-sha>` instead of `gh pr diff`. Reviewers are then host-agnostic.
-- Step 8 (post comment): use `awscc post-comment-for-pull-request --pull-request-id <PR_ID> --repository-name abuilder --before-commit-id <full-base-sha> --after-commit-id <full-head-sha> --content "..."` instead of `gh pr comment`. CodeCommit requires explicit before/after commit IDs.
-- Code citations: github.com permalink format (`https://github.com/.../blob/<sha>/file#L4-L7`) does not render in CodeCommit. If issues are found, cite as `path/to/file.py:42-45` plain text — accept the loss of clickable links.
-
-**For non-abuilder repos on GitHub:** run the shipped skill as-is, no adaptations.
-
-### Handling Findings
-
-- **No high-confidence issues (score ≥ 80)** → proceed straight to squash-merge. Do not pause.
-- **Issues found, minor (style, nit, small bug, missing edge case)** → fix in the worktree, commit + push (PR auto-updates), then proceed to squash-merge. Do **not** re-run the review (avoids infinite loops). Do **not** alert the user.
-- **Issues found, significant** → STOP. Surface to user before any further action. "Significant" means: invalidates the PR's purpose (the change doesn't actually do what the PR claims), introduces a new bug worse than the one being fixed, or breaks a contract (API, data shape, downstream consumer). Use judgment — when in doubt, alert.
-
-## Cleanup — Run Every Step From The Main Repo
-
-**Always `cd` to the main repo before cleanup.** If the shell's cwd is inside the worktree when `git worktree remove` runs, the directory is deleted under it and all subsequent commands fail with "No such file or directory".
-
-Run cleanup as **separate commands**, not a single chained `&&` line:
-
-```bash
-cd /Users/akpanoluo/code/abuilder
-git push origin --delete <branch>
-git worktree remove ../abuilder-<branch>
-git branch -D <branch>
-git checkout -- .          # discard local edits that were committed via the worktree
-git pull
-```
-
-The `git checkout -- .` is necessary because files edited interactively in the main tree before the worktree was created will block `git pull` with "local changes would be overwritten". Discarding them is safe — the squash merge already contains those changes.
+- Step 6 surfaces a significant finding (see findings policy above).
+- A `git push` or PR-create command fails — diagnose before retrying.
+- The pre-flight rebase (step 4.5) reports conflicts the model can't safely resolve unattended — surface to the user.
+- The user changes their mind mid-flow ("hold on, I want to add another commit") — pause until they're ready.
