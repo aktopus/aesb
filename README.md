@@ -74,20 +74,15 @@ strips the marker-bracketed worklog block from `~/.claude/CLAUDE.md`, and
 leaves all your vault content (`~/Documents/vault/`) and any `install.sh`
 backup directories untouched. Pass `--yes` to skip the confirmation prompt.
 
-### Other surfaces (best-effort)
+### Other code agents
 
-The repo ships `.claude-plugin/{plugin,marketplace}.json` as a Claude
-plugin manifest. In environments that support the marketplace mechanism,
-this should work:
-
-    /plugin marketplace add aktopus/aesb
-    /plugin install aesb
-
-Claude Cowork plugin loading is not currently a primary target; the
-canonical surface is laptop Claude Code via the symlink path above. If
-you're running another agent (Cursor, Aider, Codex, etc.), expect to
-adapt the SKILL.md frontmatter and slash-command conventions to whatever
-your agent expects.
+If you're running another agent (Cursor, Aider, Codex CLI, GitHub Copilot,
+etc.), expect to adapt the SKILL.md frontmatter and slash-command
+conventions to whatever your agent expects. The underlying prompts are
+portable; the wrappers are not. The Claude plugin marketplace path
+(`/plugin marketplace add`) is not currently supported by this repo's
+geometry — see the `personal` branch's commit history for the bounded
+investigation if you want the details.
 
 ## What to do in your first month
 
