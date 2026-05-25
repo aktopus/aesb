@@ -183,3 +183,4 @@ skill descends from Allie K. Miller's one-minute Claude tip post on
 LinkedIn (https://www.linkedin.com/posts/alliekmiller_give-me-one-minute-and-ill-improve-your-activity-7457149184710758400-EYs1).
 The salon framing is Soundshop, with the Data Salon being a 2026
 collaboration with Michael Bartoli of Newtown Analytics.
+
