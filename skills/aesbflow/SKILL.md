@@ -59,10 +59,10 @@ git show --name-only --pretty=format: HEAD | grep -E '^(skills|commands)/' | hea
 If the result is non-empty (i.e., this commit added or modified a skill directory or command file), run:
 
 ```bash
-/Users/akpanoluo/code/aesb/install.sh
+echo "N" | /Users/akpanoluo/code/aesb/install.sh
 ```
 
-The script is interactive only on first bootstrap (it prompts for the `CLAUDE.md` worklog block). On a re-bootstrapped machine the marker check trips and it runs non-interactively. If the user's CLAUDE.md hasn't been touched yet, defer the install.sh run and surface it to them — the prompt isn't something to pipe past silently.
+`install.sh` prompts to append a worklog standing-instruction to `~/.claude/CLAUDE.md`. In `/aesbflow` context that decision is already settled — it belongs to initial bootstrap, not ongoing maintenance — so always pipe `N` to decline. (If the marker is already present, the script self-skips the prompt and `N` is ignored.) The symlink work runs regardless of how the prompt is answered.
 
 Skip this step if the commit only touches docs (README, install.sh itself, plugin.json metadata) or non-symlinked content. Surface the skip explicitly: *"Step 2.5 skipped — diff doesn't touch skills/ or commands/."*
 
