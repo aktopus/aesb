@@ -1,17 +1,9 @@
 # aesb — Akpanoluo Etteh's AI-Enabled Second Brain
 
-A working set of Claude skills, prompts, and standing instructions for running
-a strategy-to-execution operating system on top of Claude Code and Claude
-Cowork. The system bridges a multi-month charter, monthly bets, a weekly
-ritual that time-blocks the week, and a daily checkout that captures what
-actually happened.
-
-The inciting idea came from Dini Gurunandini's post "I let Claude plan my
-entire week." The shape here is calibrated for knowledge workers navigating a
-specific multi-month horizon (a review, a board moment, a contractor-to-perm
-conversation, a launch). Everything is plain markdown plus bash, so the
-system survives Claude eventually retiring features or you eventually
-retiring Claude.
+This set of Claude capabilities empowers you to bridge higher-level strategic thinking with day-to-day execution, while growing your capacity to think and speak like a thought leader at work. When fully spun up, the user will have a multi-month vision for their work as their north star and multiple monthly roadmaps. Then, every week, a weekly ritual lets you reflect on what was accomplished in the prior week, aided by a daily checkout routine (your voice) and Claude Code logging work (automated, Claude voice). This routine then strategically blocks time throughout the week to keep you on task.
+This idea grew out of reading Dini Gurunandini's post [“I let Claude plan my](https://gurunandinisays.substack.com/p/i-let-claude-plan-my-entire-week)
+[entire week,”](https://gurunandinisays.substack.com/p/i-let-claude-plan-my-entire-week) integrated with the higher-level thinking I refined by performing the extensive exercise found in Ruben Hassid’s [“I am just a text file.”](https://ruben.substack.com/p/i-am-just-a-text-file) Everything in this repository exists in markdown files and bash, enabling this system to exist outside of Claude Code, even as it was built in a Claude-centric manner.
+This is my first time spinning up something like this, and I would love to work live with someone trying to onboard this system. So if you’re curious, shoot me an email at [aktopus@gmail.com](mailto:aktopus@gmail.com), or send me a DM on LinkedIn [here](https://www.linkedin.com/in/akpanoluo/)!
 
 ## What's in the box
 
