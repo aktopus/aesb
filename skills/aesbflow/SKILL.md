@@ -46,6 +46,26 @@ The post-commit hook auto-pushes to `origin/personal`. Capture the resulting SHA
 
 If the hook prints `post-commit: push to origin/personal failed (...)`, surface it to the user. The commit landed locally; GitHub will catch up on the next successful push. Do not attempt to manually re-push without checking the cause (network, auth, branch-gate).
 
+## Step 2.5 — Refresh symlinks if `skills/` or `commands/` changed
+
+`install.sh` enumerates `skills/*` and `commands/*.md` dynamically and creates symlinks under `~/.claude/skills/` and `~/.claude/commands/`. New skill directories or new command files only become invocable in a fresh Claude session *after* `install.sh` is re-run. Existing symlinks are idempotent — re-running the script links new entries and leaves correct ones alone.
+
+After the commit, check the touched paths:
+
+```bash
+git show --name-only --pretty=format: HEAD | grep -E '^(skills|commands)/' | head
+```
+
+If the result is non-empty (i.e., this commit added or modified a skill directory or command file), run:
+
+```bash
+/Users/akpanoluo/code/aesb/install.sh
+```
+
+The script is interactive only on first bootstrap (it prompts for the `CLAUDE.md` worklog block). On a re-bootstrapped machine the marker check trips and it runs non-interactively. If the user's CLAUDE.md hasn't been touched yet, defer the install.sh run and surface it to them — the prompt isn't something to pipe past silently.
+
+Skip this step if the commit only touches docs (README, install.sh itself, plugin.json metadata) or non-symlinked content. Surface the skip explicitly: *"Step 2.5 skipped — diff doesn't touch skills/ or commands/."*
+
 ## Step 3 — Create the worklog
 
 Path: `/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<slug>/overview.md`
@@ -115,6 +135,7 @@ Tell the user, in this exact shape:
 aesbflow complete.
 
 Commit:     <short SHA> on personal (pushed via hook)
+Symlinks:   <"refreshed via install.sh" | "skipped — diff doesn't touch skills/ or commands/">
 Worklog:    /Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<slug>/overview.md
 Changelog:  vault/vision/second-brain-changelog.md (row + detail block)
 
