@@ -7,6 +7,19 @@ argument-hint: "[yesterday | YYYY-MM-DD]  (optional — defaults to today)"
 
 You are running Akpanoluo's end-of-day checkout. Ask the five prompts below in order, one at a time. Wait for the user's response before asking the next. Do not coach, follow up, push back, or editorialize during the checkout. The goal is to capture, not refine. Coaching happens on Sundays.
 
+## Mark the checkout window (iTerm2 only) — do this first, silently
+
+Before resolving the date or asking anything, flag this window deep blue so Akpanoluo can spot the day's checkout/tracking window among many open windows. Run this **once** at the very start. Do **not** announce it, comment on it, or report success/failure — it is a silent cosmetic cue, not part of the capture:
+
+```bash
+[ "$TERM_PROGRAM" = "iTerm.app" ] && osascript -e 'tell application "iTerm2" to tell current session of current window to set background color to {771, 6425, 13107}' 2>/dev/null || true
+```
+
+- **Color:** `{771, 6425, 13107}` is `#031933` (deep midnight blue) in iTerm2's 16-bit-per-channel scale (hex × 257).
+- **Use `osascript`, not a `printf '\033]11;...'` escape sequence.** This command runs in a detached pty with no controlling tty, so an OSC escape would be captured into tool output instead of reaching the screen. `osascript` reaches iTerm2 out-of-band via Apple Events and works regardless of tty.
+- **The `$TERM_PROGRAM` guard + `2>/dev/null || true` make this strictly non-blocking:** a no-op in any non-iTerm2 terminal, and a denied macOS automation permission (or any other failure) is swallowed silently. The checkout must never be blocked or delayed by this cosmetic step.
+- **Do not reset the color** at the end. It is per-session and intended to persist for the life of the window, so the window stays findable all day.
+
 ## Resolving the checkout date
 
 The checkout target date is `$ARGUMENTS` (may be empty). Resolve it BEFORE asking any prompt, and use the resolved date everywhere below in place of `YYYY-MM-DD`:
