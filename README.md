@@ -103,6 +103,20 @@ etc.), expect to adapt the SKILL.md frontmatter and slash-command
 conventions to whatever your agent expects. The underlying prompts are
 portable; the wrappers are not.
 
+### Your first prompt
+
+After installing (either path), open a fresh Claude Code session and paste:
+
+    I just installed the aesb plugin. Read the README at
+    github.com/aktopus/aesb and get me to the README's day-1 state: vault
+    directories created, skills verified, and a quick smoke test. Nothing
+    past day 1.
+
+Claude takes it from there. The "nothing past day 1" fence matters —
+without it, Claude will happily offer to run the whole system-builder
+conversation on the spot, which is exactly what the first-month sequence
+below is designed to prevent.
+
 ## What to do in your first month
 
 The full system is a habit, not a tool, and people who try to adopt all of
