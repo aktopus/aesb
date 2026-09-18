@@ -8,3 +8,6 @@
 
 # install.sh backup directories (created at runtime on user machines)
 .aesb-backup-*
+
+# dated backup copies left next to a skill during an edit
+*.bak-*
