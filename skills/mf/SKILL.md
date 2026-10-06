@@ -17,6 +17,7 @@ When invoked, execute ALL steps of the Merge Flow from CLAUDE.md in sequence **w
 4. Push branch (from the worktree)
 5. Create PR via `awscc create-pull-request`
 6. **Run `/code-review:code-review` on the PR** — see Code Review section below
+6.5. **Run `/preflight` (checks only) on the branch** — see Step 6.5 below
 7. Squash-merge with a meaningful commit message (auto-generate, do NOT ask to confirm)
 8. Cleanup — see critical rules below
 9. Update work-log with PR ID, final commit SHA, set status to Completed
@@ -96,6 +97,41 @@ After the PR is created and **before** squash-merge, invoke `/code-review:code-r
 - **No high-confidence issues (score ≥ 80)** → proceed straight to squash-merge. Do not pause.
 - **Issues found, minor (style, nit, small bug, missing edge case)** → fix in the worktree, commit + push (PR auto-updates), then proceed to squash-merge. Do **not** re-run the review (avoids infinite loops). Do **not** alert the user.
 - **Issues found, significant** → STOP. Surface to user before any further action. "Significant" means: invalidates the PR's purpose (the change doesn't actually do what the PR claims), introduces a new bug worse than the one being fixed, or breaks a contract (API, data shape, downstream consumer). Use judgment — when in doubt, alert.
+
+## Step 6.5: Preflight Checks — Run After The Code Review, Before Squash-Merge
+
+Run Jose Cabal-Ugaz's `/preflight` skill in its default **checks-only** mode on the branch. It runs
+the repo's own `.review/run_checks.sh` (secrets, SQL gotchas, new-silo config, role matrix,
+fan-out/parity, docs currency, PR description sections) in seconds and posts nothing. Standing
+step since 2026-10-06, Akpanoluo's decision.
+
+**Why it is here and not redundant with step 6:** the review bot's automatic abuilder reviews are
+limited to three authors in `pr-review-bot`'s `repos.json`, and Akpanoluo is not one of them, so
+without this step his PRs never meet those checks at all. Step 6 reads the diff for bugs; these
+checks hold repo-specific rules a diff reader has no way to know.
+
+### Procedure
+
+1. Write the PR description as posted in step 5 to a file (it should already follow
+   `.review/PR_TEMPLATE.md`, literal headers kept), then from the worktree root:
+   ```bash
+   ~/.claude/skills/preflight/scripts/preflight.sh --base origin/main \
+     --title "<PR title>" --description-file <description file>
+   ```
+   Pass both, or the description-section checks are skipped silently.
+2. Interpret each `BLOCK`, `FLAG` and `WARN` per §3 of the repo's `.review/REVIEW.md`, as the
+   preflight skill's step 4 says. `INFO` lines need no action.
+3. Same findings policy as step 6: a `BLOCK` or a real `WARN` is fixed in the worktree, committed
+   and pushed (or the PR description updated via `awscc update-pull-request-description`), then
+   the checks re-run once to confirm. A false positive is noted in the worklog with the reason;
+   the fix for it is a PR to `.review/checks/`, never a silent skip.
+4. Repo has no `.review/` folder → the step does not apply; say so and continue.
+
+`--full` (playbook review plus a bug hunt, 5–10 minutes, one headless Opus session) and `--hunt`
+are **not** part of the standing step. Run them only when asked.
+
+Installed from `~/Repositories/pr-review-bot` (`~/.claude/skills/preflight` is a symlink into the
+clone's `skill/` folder); `git -C ~/Repositories/pr-review-bot pull` picks up Jose's updates.
 
 ## Cleanup — Run Every Step From The Main Repo
 
