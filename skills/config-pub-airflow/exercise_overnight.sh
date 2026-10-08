@@ -21,6 +21,8 @@
 # it with every other silo's task and the run's deletion kills them (rtif_ti_fkey, SIGTERM) —
 # the 2026-10-06 ASB-4213..4216 burst. Paused, the scheduler never looks at the run. A DAG with
 # a run in flight is not paused; its tasks print SKIPPED and count as not SUCCESS — rerun later.
+# A DAG that is already paused is left paused (it is safe as it is, and it was paused on purpose).
+# The tasks themselves run for real against DS; this is an exercise, not a dry run.
 SILO="$1"; SLUG="$2"; DS="$3"
 DAGS="daily_builder_syndicated_segment_metrics daily_builder_silo_custom_user_data daily_builder_silo_custom_data daily_builder_silo_categories daily_builder_silo_domains daily_builder_silo_keywords daily_builder_silo_taxonomy daily_builder_gam_line_items daily_builder_gam_orders daily_thresholds daily_aspancount daily_operational"
 n=0; bad=0; PAUSED=""
@@ -33,7 +35,10 @@ for d in $DAGS; do
     for t in $tasks; do n=$((n+1)); bad=$((bad+1)); echo "RESULT SKIPPED(run in flight, rerun later) $d $t"; done
     continue
   fi
-  airflow dags pause "$d" >/dev/null 2>&1; PAUSED="$d"
+  # Pause only a DAG that is active now, so a DAG someone paused on purpose stays paused.
+  if [ "$(airflow dags list -o plain 2>/dev/null | awk -v d="$d" '$1==d {print $NF}')" = "False" ]; then
+    airflow dags pause "$d" >/dev/null 2>&1; PAUSED="$d"
+  fi
   for t in $tasks; do
     out=$(airflow tasks test "$d" "$t" "$DS" 2>&1); rc=$?
     if echo "$out" | grep -q "Marking task as SUCCESS"; then st=SUCCESS
