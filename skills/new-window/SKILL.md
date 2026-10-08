@@ -1,6 +1,6 @@
 ---
 name: new-window
-description: "Use when the user says /new-window, types 'new window', 'hand off', 'context handoff', or wants to spin off one or more fresh Claude sessions from the current work. Always creates new worklog(s) for the spawned session(s) and writes self-contained handoff materials. Supports single-handoff (one fresh session continues this work) and fan-out (N fresh sessions investigate parallel concerns) from one entry point — same flow, N=1 vs N>1."
+description: "Use when the user says /new-window, types 'new window', 'hand off', 'context handoff', or wants to spin off one or more fresh Claude sessions from the current work. Always creates new worklog(s) for the spawned session(s) and writes self-contained handoff materials. Supports single-handoff (one fresh session continues this work) and fan-out (N fresh sessions investigate parallel concerns) from one entry point — same flow, N=1 vs N>1. Also triggers on 'create new windows for X, work on Y here' — the spawn happens FIRST and its launch commands end the turn as a standalone message before any work on Y starts."
 ---
 
 # /new-window — Spawn fresh sessions from current work
@@ -13,9 +13,8 @@ Every fresh session = its own new worklog. Lineage lives in worklog frontmatter 
 
 If the user passed slugs as arguments, use them. Otherwise:
 
-1. Propose 1+ kebab-case slugs based on session context, one per concern that should become its own fresh-session worklog.
-2. Show the proposed list with one-line topic summaries.
-3. Wait for the user to confirm or edit before writing anything.
+1. Pick 1+ kebab-case slugs based on session context, one per concern that should become its own fresh-session worklog.
+2. **Do not wait for confirmation of the names** — write the worklogs and state the chosen slugs in the report (Akpanoluo, 2026-09-13: "I'm not precious about the names! let's not do that again"). The only thing worth a pause is the *count* of windows when one-vs-many is genuinely unclear, or an ambiguous parent worklog (Step 2).
 
 Single-handoff case (N=1) is normal. If the user just wants a context reset on the same work, propose one slug like `<original-topic>-continuation`.
 
@@ -122,9 +121,9 @@ Default yes; draft from the session. Location: `<originating-worklog>/back-to-pa
 
 Skip this step entirely if `parent_worklog:` is unset on the originating worklog.
 
-## Step 7 — Report back
+## Step 7 — Report back (standalone message, ends the turn)
 
-End the turn with a compact status and ready-to-paste launch commands:
+The report below is the **last thing in the turn, and nothing else runs after it**. Its only job is to put the launch commands on screen so Akpanoluo can paste them into other terminals while this window waits. End the turn with a compact status and ready-to-paste launch commands:
 
 > Spawned N new worklog(s) under parent: `<parent-path>`.
 >
@@ -138,6 +137,17 @@ End the turn with a compact status and ready-to-paste launch commands:
 > When ready to integrate, harvest findings from each child's `back-to-parent.md`.
 
 If back-to-parent.md was also written this session (step 6), note that too: "Also wrote `back-to-parent.md` at `<path>` for grand-parent `<grand-parent-name>`."
+
+### Spawn-then-continue pattern ("create new windows for X, work on Y here")
+
+Akpanoluo often pairs a spawn with work he wants to keep in *this* window: "spin up windows for A, B, C — I'll work on D here." The order is fixed (2026-10-08, four commands buried under an ASB-4176 investigation in the same turn):
+
+1. **Spawn first.** Steps 1–6 for every child, nothing else.
+2. **Commands land in their own message that ends the turn.** The Step 7 report is the whole final message. Do not start Y, do not read a file for Y, do not open a worktree for Y in the same turn. One tool call toward Y after the commands pushes them into scrollback — that is the failure.
+3. **Name the restart.** Close the report with one line: "Say `go` and I start on <Y> here." Y begins on his next prompt. The one extra prompt is the cost of keeping the commands visible; it is cheaper than him scrolling for them.
+4. **If he says to keep going in the same turn** ("don't stop, carry on with Y"), honour it — and repeat the full launch-command block verbatim at the end of the turn's final message so it is on screen again. The block in `next-window.md` is the backup, not the delivery.
+
+The same rule holds when the spawn is a side question (`/btw`) inside a working session: answer the side question with the commands and nothing else.
 
 ### Launch command rules
 
@@ -163,6 +173,7 @@ If back-to-parent.md was also written this session (step 6), note that too: "Als
 - **Never put time-decay phrases in next-window.md** ("earlier today", "just now"). Use absolute timestamps or the session date.
 - **Never spawn a code-change branch+worktree at fan-out time.** Children start as investigation worklogs; branches are a separate user action when code is actually needed (per CLAUDE.md merge-flow).
 - **Never bundle multiple unrelated concerns into one child worklog.** Each distinct concern = its own child. That's the point of fan-out.
+- **Never let work on a stay-here task follow the launch commands in the same turn.** Commands first, turn ends, the stay-here task starts on the next prompt (Step 7, spawn-then-continue). Burying the commands under an investigation reads to Akpanoluo as "you never pasted them".
 - **Never re-introduce a `fanout/` subdirectory.** The earlier nested-subdir design was rejected in favor of flat siblings + frontmatter lineage.
 
 ## When to DECLINE the skill
