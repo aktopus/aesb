@@ -15,11 +15,26 @@
 # Skipped on purpose: aurora_* tasks (they read an XCom from the ingest and return early on no
 # rows), and the Bombora / LiveRamp taxonomy DAGs (they publish to the builder; let their own
 # slot run them, :40 past 4, 10, 16, 22 UTC).
+#
+# Each DAG is PAUSED for the seconds its tasks run, then unpaused (also on exit). On Airflow
+# 2.8.4 `tasks test` with a date creates a real queued DagRun; an unpaused DAG's scheduler fills
+# it with every other silo's task and the run's deletion kills them (rtif_ti_fkey, SIGTERM) —
+# the 2026-10-06 ASB-4213..4216 burst. Paused, the scheduler never looks at the run. A DAG with
+# a run in flight is not paused; its tasks print SKIPPED and count as not SUCCESS — rerun later.
 SILO="$1"; SLUG="$2"; DS="$3"
 DAGS="daily_builder_syndicated_segment_metrics daily_builder_silo_custom_user_data daily_builder_silo_custom_data daily_builder_silo_categories daily_builder_silo_domains daily_builder_silo_keywords daily_builder_silo_taxonomy daily_builder_gam_line_items daily_builder_gam_orders daily_thresholds daily_aspancount daily_operational"
-n=0; bad=0
+n=0; bad=0; PAUSED=""
+unpause() { [ -n "$PAUSED" ] && airflow dags unpause "$PAUSED" >/dev/null 2>&1; PAUSED=""; }
+trap unpause EXIT
 for d in $DAGS; do
-  for t in $(airflow tasks list "$d" 2>/dev/null | grep -E "_(${SILO}|${SLUG})$" | grep -v "^aurora_"); do
+  tasks=$(airflow tasks list "$d" 2>/dev/null | grep -E "_(${SILO}|${SLUG})$" | grep -v "^aurora_")
+  [ -z "$tasks" ] && continue
+  if airflow dags list-runs -d "$d" --state running -o plain 2>/dev/null | grep -q "^$d "; then
+    for t in $tasks; do n=$((n+1)); bad=$((bad+1)); echo "RESULT SKIPPED(run in flight, rerun later) $d $t"; done
+    continue
+  fi
+  airflow dags pause "$d" >/dev/null 2>&1; PAUSED="$d"
+  for t in $tasks; do
     out=$(airflow tasks test "$d" "$t" "$DS" 2>&1); rc=$?
     if echo "$out" | grep -q "Marking task as SUCCESS"; then st=SUCCESS
     elif echo "$out" | grep -qE "Marking task as (FAILED|UP_FOR_RETRY)|Traceback"; then st=FAILED; bad=$((bad+1))
@@ -27,6 +42,7 @@ for d in $DAGS; do
     n=$((n+1)); echo "RESULT $st $d $t"
     [ "$st" != "SUCCESS" ] && echo "$out" | grep -vE "^\s*$" | tail -12 | sed 's/^/  DETAIL /' | cut -c1-300
   done
+  unpause
 done
 # Zero tasks found is a failure of this script (wrong slug, DAG not deployed), never a pass.
 echo "EXERCISED $n task(s), $bad not SUCCESS"
