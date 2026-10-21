@@ -61,11 +61,11 @@ Run `portal_preflight.py`, then `preflight.sql` queries 0 to 6b. Required answer
 
 ### 2. The block
 
-Copy the most recent **shell** block in `config.py` (silo76/PlayOn is the first), never a full analytics block: the repo's shape moves, so no template lives here. A shell carries `silo`, `name`, `region`, `daily_proc` (`{"inc_flag": 0, "schedule_interval": "0 4 * * *"}`), `daily_aspancount`, `daily_builder`, `daily_errors`, and the opt-outs from the flag table. Also:
+Copy the most recent **shell** block in `config.py` (silo76/PlayOn is the first), never a full analytics block: the repo's shape moves, so no template lives here. A shell carries `silo`, `name`, `region`, `daily_proc` in the fleet's 2-hourly shape (`{"inc_flag": 0, "schedule_interval": "0 */2 * * *", "sizer_gate_hour": 2, "rca_interval_hours": [0, 2, 8, 14, 20]}`; take this value from here, not from silo76, whose proc stays 1x/day until `SILO76_WH` is sized), `daily_aspancount`, `daily_builder`, `daily_errors`, and the opt-outs from the flag table. Also:
 
 - Remove `'SILONN'` from `KNOWN_NON_CLIENT_DBS` in `airflow-dags/daily_operational.py`.
 - The block comment names each absent block and its trigger. No **value** in the block may carry another silo's id (`.review/checks/check_silo_config.py` reads the parsed dict and warns on donor residue; keep other silos' ids out of the comments too, so the next copy starts clean). No added line, comment or not, may contain the literal custom-data table name (`check_customdata_push.py` matches it anywhere in an added `config.py` line).
-- Once a day at shell stage on purpose: with no `sizer_gate_hour` every run is full, so the run that fires on unpause builds the view and sizer table while you watch.
+- 2-hourly from the shell on (Akpanoluo, 2026-10-21), so the silo never needs a later schedule change. `sizer_gate_hour: 2` makes the cycle that executes at 04:00 UTC the one full run of the day, the same time the old 1x/day shell ran; the other eleven cycles skip the full-run blocks (`daily_proc.py` `proc_cycle_flags`). `rca_interval_hours` `[0, 2, 8, 14, 20]` covers the standard reader of `report_cohort_aggregate` (`daily_builder_cohort_metrics`); the reader audit in the `daily_proc` docstring is owed only when the silo gains another reader of that table (for example a `bigquery_export`). Cost on an idle shell: eleven extra light cycles a day, about $120/yr at the 60 s minimum bill on X-Small.
 
 ### 3. Merge flow
 
@@ -92,8 +92,8 @@ X "airflow tasks states-for-dag-run daily_proc_siloNN <run_id> -o plain"
    ```
    Run them through the MCP whose role owns the silo's objects (`TAVANTGROUP`).
 3. Create the custom-data table if pre-flight showed it missing.
-4. `airflow dags unpause daily_proc_siloNN`. Unpausing **fires one run immediately** (run id `scheduled__<start of the last completed interval>`); it takes under a minute on an empty silo.
-5. Verify with `preflight.sql` queries 7 and 8: both tasks `success`; rows down the chain; `ARCID_PROFILES` and `SIZER_EVENTS` exist; the only failed `AIRFLOWUSER` statement is the sizer's `SILONNEU` probe (logged under database `ASPANDB`). **Say plainly whether the logs hold `/p.png` beacons or only script fetches.** Then `python3 /Users/akpanoluo/code/scripts/refresh-silo-domain-summary.py`.
+4. `airflow dags unpause daily_proc_siloNN`. Unpausing **fires one run immediately** (run id `scheduled__<start of the last completed interval>`); it takes under a minute on an empty silo. That run is **not** the full run unless its interval starts at 02:00 UTC, so it does not build `ARCID_PROFILES` or `SIZER_EVENTS`; the 04:00 UTC cycle does.
+5. Verify with `preflight.sql` queries 7 and 8: both tasks `success`; rows down the chain; `ARCID_PROFILES` and `SIZER_EVENTS` exist after the first 04:00 UTC cycle (a next-morning check unless that cycle has already run); the only failed `AIRFLOWUSER` statement is the sizer's `SILONNEU` probe (logged under database `ASPANDB`). **Say plainly whether the logs hold `/p.png` beacons or only script fetches.** Then `python3 /Users/akpanoluo/code/scripts/refresh-silo-domain-summary.py`.
 
 6. **Exercise the overnight-only tasks now** with `exercise_overnight.sh` (its header has the command): it runs each of the silo's per-silo tasks in the 01:30 to 12:20 UTC slots through `airflow tasks test`, pausing each DAG for the seconds its tasks run so the scheduler cannot dispatch the other silos' tasks into the throwaway run (the 2026-10-06 ASB-4213..4216 burst; gotcha #31), and prints one `RESULT` line per task. A DAG with a run in flight is skipped, not paused — rerun for it later. Want `EXERCISED 15 task(s), 0 not SUCCESS` (15 on a plain shell; zero tasks found means the slug is wrong, not that all is well). This is what lets a merge at midday stand without a night's wait, and it is the evidence a reviewer will ask for.
 
@@ -106,7 +106,7 @@ The proc stays unpaused from here even with zero traffic. A running proc is what
 - Iceberg discovery enrollment and its S3 lifecycle rule: `/code/vault/context/snowflake-to-iceberg-athena-playbook/` (`04a-enroll-seed.md`, `04b-parity-flip.md`). The `daily_test` block arrives here, always `"dag_enabled": False`.
 - Pre-Sales enrollment on Athena, with the roster pins in `tests/test_presales_consumer_cutover.py` bumped in the same change.
 - `daily_ci`, then `weekly_ci` only after `daily_ci`'s first green run. Needs GAM API access.
-- Proc to the 2-hourly fleet shape (`sizer_gate_hour`, `rca_interval_hours`) after the reader audit its docstring asks for; drop the sketch opt-out once `SIZER_EVENTS` has rows.
+- Drop the sketch opt-out once `SIZER_EVENTS` has rows. The proc is already 2-hourly from the shell; add a reader to `rca_interval_hours` only if the analytics stage adds a reader of `report_cohort_aggregate`.
 - Warehouse size and `AUTO_SUSPEND 30` from measured volume, never from the SOW figure alone.
 - QuickSight hand-off to Artemio Rimando; SSP/Identifier tabs if the SOW contracts them.
 
@@ -116,12 +116,12 @@ Which shared DAGs pick a silo up, and what each needs. Re-derive it when a DAG i
 
 | DAG (UTC slot) | Gate | Needs | On an empty shell |
 |---|---|---|---|
-| `daily_proc_siloNN` (block's schedule; once on unpause) | `daily_proc` | fresh streams, custom-data table | green; builds the view, sizer table, carrier stream |
+| `daily_proc_siloNN` (every 2 h; once on unpause) | `daily_proc` | fresh streams, custom-data table | green; the 04:00 UTC cycle builds the view and sizer table, every cycle the carrier stream |
 | `daily_builder_ams_cohorts` (:15 hourly) | `daily_builder` | portal rows | creates `AMS_COHORTS` |
 | `cohort_metrics`, `silo_metrics`, `silo_trends` (:30 at 3-5, 11, 17, 23) | `daily_builder` | proc's tables | green, no rows |
 | `silo_categories` (01:30); `silo_domains`, `silo_keywords`, `silo_taxonomy` (02:00) | `daily_builder` | proc's tables | green, no rows |
 | `gam_line_items`, `gam_orders` (05:15) | `daily_builder` | MySQL only | creates empty tables; no GAM API call |
-| **`syndicated_segment_metrics` (05:30)** | `daily_builder` | **`ARCID_PROFILES` view** | **fails until the first full proc run** |
+| **`syndicated_segment_metrics` (05:30)** | `daily_builder` | **`ARCID_PROFILES` view** | **fails until the first full proc run** (unpause between 04:00 and 05:30 UTC and it fails once) |
 | `silo_custom_data`, `silo_custom_user_data` (07:00) | `daily_builder` | one active `silos` row and a `publisher` row | raises if either is missing |
 | **`daily_gam_reports_*`** (04:00 to 05:30; entities hourly :45) | `daily_builder`, unless `daily_gam_reports: False` | **GAM API access for the configured code** | `line_item_summary` raises nightly; `programmatic_cohort_insights` raises from its 2nd run |
 | `bombora_taxonomies`, `liveramp_taxonomies` (:40 at 4, 10, 16, 22); `liveramp_data` | `daily_builder`, no flag | nothing | publishes the Bombora standard rate card; LiveRamp exits early |
