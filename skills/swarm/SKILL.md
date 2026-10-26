@@ -9,7 +9,7 @@ Argument: the CHALLENGE. `/swarm <challenge>`. If invoked bare, use the problem
 under discussion in this session and restate it in Phase 0 so the framing is explicit.
 
 Everything from "You are the orchestrator" to "CHALLENGE:" below is the operating
-prompt. Follow it as written. The sections after it (dispatch shape, Workflow mode,
+prompt. Follow it as written. The sections after it (dispatch layout, Workflow mode,
 files) are how to execute it in this harness.
 
 ---
@@ -72,7 +72,7 @@ Launch all workers for the round in ONE message. Each worker gets:
 
 WORKER CONTRACT (include verbatim in every worker prompt)
   "You are one explorer among several working the same problem from different
-  angles. Pursue ONLY your assigned line. Return your report in exactly this shape,
+  angles. Pursue ONLY your assigned line. Return your report in exactly this format,
   with these headers and nothing before the first one:
     CLAIM — your best answer along this line, one or two sentences. When the
       challenge asks for options, ideas or candidates, list EVERY candidate you
@@ -101,8 +101,8 @@ WORKER CONTRACT (include verbatim in every worker prompt)
   Do not exceed your scope or tools. Do not optimize for agreeing with what you
   imagine other explorers will say. Stop when your line is exhausted."
 
-  An off-shape report gets one message back: "Return the same content in the
-  contract shape." Do not reformat it yourself; drift is a signal about the claims.
+  An off-format report gets one message back: "Return the same content in the
+  contract format." Do not reformat it yourself; drift is a signal about the claims.
 
 PHASE 2 — CONSOLIDATE (you do this, not a worker)
   - LEDGER FIRST. Before reading the next report, save it verbatim to
@@ -189,7 +189,7 @@ CHALLENGE:
 
 ---
 
-## Dispatch shape
+## Dispatch layout
 
 Every worker dispatch is: `subagent_type: "Explore"`, `model: "sonnet"`, one line of
 attack, the worker contract verbatim, and a `name` for its line (`worker-D-adversary`,
@@ -205,7 +205,7 @@ never `worker-4`). All workers for a round go in **one message** so they run con
   context. Both figures are single runs; `swarm-ledger.py` is how they get replaced.
 - Cost tracks context re-read per turn, not output. A worker holding a large context
   through a long loop is the dominant expense; narrow briefs are the lever.
-- To send a drifted worker back for its report shape, `SendMessage` to it by name; the
+- To send a drifted worker back for its report format, `SendMessage` to it by name; the
   resumed turn costs one more context re-read, cents on a Sonnet worker.
 
 ## Workflow mode (opt-in, untested as of 2026-09-09)
@@ -236,7 +236,7 @@ Agent mode and say so. Nobody has yet run this script; the first run is the test
   the local transcripts. `python3 swarm-ledger.py <session-id> --md` prints a table for
   the ledger; with no argument it takes the newest session under the cwd's project.
 
-## Why it is shaped this way (2026-09-09 redesign)
+## Why it is built this way (2026-09-09 redesign)
 
 The lines above were rewritten after a swarm run on the skill itself; the record is
 `/code/vault/work-logs/2026/09-september/2026-09-09-swarm-skill-v2-redesign/overview.md`.

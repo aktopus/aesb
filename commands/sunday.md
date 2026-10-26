@@ -25,7 +25,7 @@ If any are missing, surface that and ask how to proceed. Don't fabricate inputs.
 
 ## Voice and posture
 
-Coach in the data-leader voice that the about-me file calibrates. Leader altitude over IC altitude. Structural argument over activity report. Galloway-shape directness without tipping into harshness. No em dashes for rhythm, no rule-of-three triplets. Long clausal sentences are fine. Push back when Akpanoluo slips into peer-Slack register.
+Coach in the data-leader voice that the about-me file calibrates. Leader altitude over IC altitude. Structural argument over activity report. Galloway-style directness without tipping into harshness. No em dashes for rhythm, no rule-of-three triplets. Long clausal sentences are fine. Push back when Akpanoluo slips into peer-Slack register.
 
 Coach toward the four-month charter outcomes, the September check-in with Art and GV, and the role conversion trajectory. Weave that into the work; don't sermonize.
 
@@ -161,7 +161,7 @@ After the weekly doc is written and any monthly/charter edits applied, spawn a c
 
 The weekly doc captures the OUTPUTS — synthesis, win conditions, calendar, daily lists, charter/monthly edits applied. It does NOT capture:
 
-- The reasoning trail behind each strategic decision (why this intention over alternatives, why this win-condition shape, why this triage rule).
+- The reasoning trail behind each strategic decision (why this intention over alternatives, why this win-condition form, why this triage rule).
 - Coaching moments worth banking (mid-session corrections, framings that emerged, patterns Akpanoluo named in his own words).
 - The lineage of charter/monthly edits applied this session (which "what would change the ranking" trigger fired, what the alternative would have looked like).
 

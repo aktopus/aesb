@@ -30,10 +30,10 @@ n=$(ls -d "$d/$day"-* 2>/dev/null | wc -l | tr -d ' '); printf '%s/%s-%02d\n' "$
 1. **Find his text.** In order: the skill arguments, his message, then the place it lives (a sent Slack message, a Jira comment, a file). An unsent Slack draft cannot be read back, so ask him to paste it. Take his text only from one of these, never from his description of what he changed.
 2. **Find Claude's text.** The last complete version Claude wrote before he took over the wording. If Claude rewrote the draft mid-conversation to fix a fact, the rewrite is the one. If it is gone from context, look for an open directory (step 3), then the session transcript.
 3. **Pick the directory.** A directory that holds `claude-speak.md` and no `akpanoluo-speak.md` for this same piece is open: complete it. Otherwise take the next free one.
-4. **Write both files** in the shape below.
+4. **Write both files** in the format below.
 5. **Report in one line:** the directory path and how many examples the folder now holds. No commentary on the differences unless he asks.
 
-## File shape
+## File format
 
 ```markdown
 ---

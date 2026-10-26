@@ -61,7 +61,7 @@ Run `portal_preflight.py`, then `preflight.sql` queries 0 to 6b. Required answer
 
 ### 2. The block
 
-Copy the most recent **shell** block in `config.py` (silo76/PlayOn is the first), never a full analytics block: the repo's shape moves, so no template lives here. A shell carries `silo`, `name`, `region`, `daily_proc` in the fleet's 2-hourly shape (`{"inc_flag": 0, "schedule_interval": "0 */2 * * *", "sizer_gate_hour": 2, "rca_interval_hours": [0, 2, 8, 14, 20]}`; take this value from here; silo76 ran 1x/day until abuilder PR 4950 moved it to this shape after one full day of green runs, 2026-10-22), `daily_aspancount`, `daily_builder`, `daily_errors`, and the opt-outs from the flag table. Also:
+Copy the most recent **shell** block in `config.py` (silo76/PlayOn is the first), never a full analytics block: the repo's config structure moves, so no template lives here. A shell carries `silo`, `name`, `region`, `daily_proc` in the fleet's 2-hourly configuration (`{"inc_flag": 0, "schedule_interval": "0 */2 * * *", "sizer_gate_hour": 2, "rca_interval_hours": [0, 2, 8, 14, 20]}`; take this value from here; silo76 ran 1x/day until abuilder PR 4950 moved it to this configuration after one full day of green runs, 2026-10-22), `daily_aspancount`, `daily_builder`, `daily_errors`, and the opt-outs from the flag table. Also:
 
 - Remove `'SILONN'` from `KNOWN_NON_CLIENT_DBS` in `airflow-dags/daily_operational.py`.
 - The block comment names each absent block and its trigger. No **value** in the block may carry another silo's id (`.review/checks/check_silo_config.py` reads the parsed dict and warns on donor residue; keep other silos' ids out of the comments too, so the next copy starts clean). No added line, comment or not, may contain the literal custom-data table name (`check_customdata_push.py` matches it anywhere in an added `config.py` line).
@@ -150,7 +150,7 @@ Which shared DAGs pick a silo up, and what each needs. Re-derive it when a DAG i
 
 ## Close-out
 
-- Ticket: In Review per `mf`; one comment in the succinct shape (what is on, what is deliberately off and why, whether events are flowing). It closes when events flow end to end, not at merge.
+- Ticket: In Review per `mf`; one comment in the succinct format (what is on, what is deliberately off and why, whether events are flowing). It closes when events flow end to end, not at merge.
 - A deferral carrying the next stage's triggers (first beacons; GAM access; production traffic), and next-morning checks in the day's `next-day-checks` file for the first unattended cycle (04:00, 05:30, 07:00 UTC).
 - A message to the onboarding owner goes out as a **draft**. Give fact and consequence (for example "the dev page fetches only `/as.js` and sends no events"); whether to raise it with the publisher is their call.
 - Worklog with the commands and results, including run ids and the row counts down the chain.

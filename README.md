@@ -12,7 +12,7 @@ actually happened. It is the artifact behind the May 2026 Newtown Analytics
 Data Salon talk "AI and the Second Brain."
 
 The inciting idea came from Dini Gurunandini's post "I let Claude plan my
-entire week." The shape here is calibrated for knowledge workers navigating a
+entire week." The design here is calibrated for knowledge workers navigating a
 specific multi-month horizon (a review, a board moment, a contractor-to-perm
 conversation, a launch). Everything is plain markdown plus bash, so the
 system survives Claude eventually retiring features or you eventually
@@ -52,7 +52,7 @@ marketplace**. If you're on an older Claude Code, on Cowork, or want a
 non-plugin install for any other reason, the `install.sh` bootstrap is the
 fallback. Other code agents (Cursor, Aider, Codex CLI, GitHub Copilot, etc.)
 can adapt the skills with some agent-specific edits to frontmatter and
-conventions; the package is built around the Claude SKILL.md shape but the
+conventions; the package is built around the Claude SKILL.md format but the
 underlying prompts are portable.
 
 ### Plugin install (the canonical path)
@@ -158,7 +158,7 @@ Contributions go to `main` via PR. Refinements I want to publish from my
 own use travel `personal -> main` through a per-skill de-personalization
 pass, which is a Claude conversation per skill rather than a regex pass.
 Most personalizations carry information, so the pass is where the
-generalizable shape gets articulated. That conversation is where the actual
+generalizable pattern gets articulated. That conversation is where the actual
 value of the templated version lives.
 
 ## Where things go
@@ -175,7 +175,7 @@ value of the templated version lives.
 
 ## Credits
 
-The strategic-OS shape descends from Dini Gurunandini's "I let Claude plan
+The strategic-OS design descends from Dini Gurunandini's "I let Claude plan
 my entire week." The Sunday-ritual and daily-checkout patterns are a direct
 lift from her conversation, generalized. The voice-extraction step descends
 from Ruben Hassid's "You're Just a Text File." The `ss` screenshot-pull

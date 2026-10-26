@@ -115,6 +115,6 @@ Script (tap-to-toggle for touch, plus the glossary build):
 
 ## Before publishing
 
-- Open the page and check that every marked term shows its tooltip, and that the glossary lists each term once, in reading order, in the `term: real thing` shape.
+- Open the page and check that every marked term shows its tooltip, and that the glossary lists each term once, in reading order, in the `term: real thing` format.
 - Tooltips near the right edge must not cause horizontal scroll at phone width; the `max-width: min(320px, 80vw)` cap handles this when the term sits at the start of a line. Check once at 375px.
 - Publish through `/publish-work` (work account), and record the artifact URL in the worklog's `**Artifacts:**` line.

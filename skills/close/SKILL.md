@@ -31,7 +31,7 @@ Sweep the whole thread, not the last few turns. Build the audit from these sourc
 ## Step 2 — Update or create the worklog
 
 - If a worklog for this thread exists under `/Users/akpanoluo/code/vault/work-logs/YYYY/MM-month/YYYY-MM-DD-<topic>/overview.md`, update it: status line current, results and the Verification / spot-checks section present, any artifacts/tickets/deferrals linked.
-- If none exists and the thread produced findings, decisions, or changes, create one via the `worklog` skill's section shape (TL;DR · What I did · What I'm leaving for next time · Verification / spot-checks) at that path — never the skill's stale `~/Documents/vault/worklog/` default.
+- If none exists and the thread produced findings, decisions, or changes, create one via the `worklog` skill's section layout (TL;DR · What I did · What I'm leaving for next time · Verification / spot-checks) at that path — never the skill's stale `~/Documents/vault/worklog/` default.
 - If the thread was chat-only with nothing worth recording, say so in part 2 instead of inventing a worklog.
 
 ## Step 3 — Verdict

@@ -41,7 +41,7 @@ For each confirmed slug, create `YYYY-MM-DD-<slug>/overview.md` with frontmatter
     spawned_from_session: YYYY-MM-DD
     ---
 
-The body must be self-contained — a fresh Claude won't see this session's messages. Use this shape:
+The body must be self-contained — a fresh Claude won't see this session's messages. Use this format:
 
     # <Child topic — human readable>
 
@@ -73,7 +73,7 @@ Also apply today's existing /new-window updates to the parent: refresh `status`,
 
 ## Step 5 — Write next-window.md in the originating worklog
 
-`<parent-worklog>/next-window.md` is the index of spawned children plus launch commands. Use this shape:
+`<parent-worklog>/next-window.md` is the index of spawned children plus launch commands. Use this format:
 
     # Spawned new windows — YYYY-MM-DD
 
@@ -100,7 +100,7 @@ Check the originating worklog's frontmatter for `parent_worklog:`. If set, this 
 
 > This worklog is a child of [grand-parent]. Want me to write a `back-to-parent.md` with curated findings to surface up?
 
-Default yes; draft from the session. Location: `<originating-worklog>/back-to-parent.md`. Shape:
+Default yes; draft from the session. Location: `<originating-worklog>/back-to-parent.md`. Format:
 
     # back-to-parent — findings for <grand-parent-name>
 

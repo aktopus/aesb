@@ -257,7 +257,7 @@ The worktree persists across invocations of this skill. You can also use it dire
 - `/Users/akpanoluo/.claude/plans/synchronous-tumbling-church.md` — the generalization plan this skill executes against (12-step sequencing, per-skill weight, 10 Open Questions with user-approved dispositions).
 - `/Users/akpanoluo/code/vault/work-logs/2026/05-may/2026-05-23-aesb-bootstrap/aesb-generalization-plan.md` — vault copy of the same plan.
 - `/Users/akpanoluo/.claude/projects/-Users-akpanoluo-code/memory/reference_claude_code_plugin_skill_frontmatter.md` — the frontmatter rules verified at Phase 4.1.
-- `~/.claude/plugins/marketplaces/superpowers-marketplace/.claude-plugin/marketplace.json` — working-example shape if Phase 4 verification surfaces a frontmatter question.
+- `~/.claude/plugins/marketplaces/superpowers-marketplace/.claude-plugin/marketplace.json` — working example of the format if Phase 4 verification surfaces a frontmatter question.
 
 ## Invocation summary
 

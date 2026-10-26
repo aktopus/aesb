@@ -129,7 +129,7 @@ Two edits in this file, in this order:
 
 ## Step 5 — Report final state
 
-Tell the user, in this exact shape:
+Tell the user, in this exact format:
 
 ```
 aesbflow complete.
